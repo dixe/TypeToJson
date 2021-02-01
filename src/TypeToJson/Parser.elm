@@ -252,16 +252,3 @@ mapPr f r =
 
         Err e ->
             Err e
-
-
-ln : String -> List (Node.Node a) -> List a
-ln label nodes =
-    Debug.log label <| List.map Node.value nodes
-
-
-ll =
-    Debug.log
-
-
-log =
-    Debug.log "log"

@@ -1,8 +1,8 @@
-module TypeToJson.Generators.Generator exposing (generate)
+module TypeToJson.Generator exposing (generate)
 
-import TypeToJson.Generators.Decode as DC
-import TypeToJson.Generators.Encode as EC
-import TypeToJson.Generators.Types exposing (..)
+import TypeToJson.Generator.Decode as DC
+import TypeToJson.Generator.Encode as EC
+import TypeToJson.Generator.Types exposing (..)
 import TypeToJson.Interpolate exposing (..)
 import TypeToJson.Types exposing (..)
 

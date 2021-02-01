@@ -1,8 +1,8 @@
-module TypeToJson.Generators.Encode exposing (encoderDeclaration, generate)
+module TypeToJson.Generator.Encode exposing (encoderDeclaration, generate)
 
 import List.Extra
 import String.Extra exposing (decapitalize)
-import TypeToJson.Generators.Types exposing (..)
+import TypeToJson.Generator.Types exposing (..)
 import TypeToJson.Interpolate exposing (..)
 import TypeToJson.Types exposing (..)
 
@@ -26,13 +26,13 @@ encoderDeclaration : Coder -> String
 encoderDeclaration d =
     let
         typeArgs =
-            String.join " " <| List.map (\x -> "Encode.Encoder " ++ x ++ "->") d.generics
+            String.join " " <| List.map (\x -> "Encode.Value " ++ x ++ "->") d.generics
 
         args =
             String.join " " <| List.map (\x -> x ++ "Encoder") d.generics
     in
     """
-{{name}}Encoder : {{typeArgs}} Encode.Encoder {{Name}}
+{{name}}Encoder : {{typeArgs}} Encode.Value {{Name}}
 {{name}}Encoder {{args}} =
 {{impl}}"""
         |> interpolateAll
@@ -219,7 +219,7 @@ record name generics def ctx =
             List.map recordField def
 
         impl =
-            """Encode.object =
+            """Encode.object
 {{rows}}"""
                 |> interpolateAll
                     [ ( "rows", String.join "\n" rows )
@@ -230,7 +230,7 @@ record name generics def ctx =
 
 recordField : { name : String, anno : TypeAnnotation } -> String
 recordField { name, anno } =
-    """ ("{{fieldName}}", {{encoder}} {{fieldName}}  """
+    """ ("{{fieldName}}", {{encoder}} {{fieldName}} )"""
         |> interpolateAll
             [ ( "fieldName", name )
             , ( "encoder", typeAnnotation anno )

@@ -1,4 +1,4 @@
-module TypeToJson.Generators.Types exposing (..)
+module TypeToJson.Generator.Types exposing (..)
 
 import TypeToJson.Types exposing (..)
 

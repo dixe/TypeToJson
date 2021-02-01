@@ -2,3 +2,11 @@
 elm-stuff
 # elm-repl generated files
 repl-temp-*
+*.min.js
+index.html
+**/.#
+.#*
+
+
+node_modules/
+test/TestGenerate

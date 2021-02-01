@@ -1,8 +1,8 @@
-module TypeToJson.Generators.Decode exposing (decoderDeclaration, generate)
+module TypeToJson.Generator.Decode exposing (decoderDeclaration, generate)
 
 import List.Extra
 import String.Extra exposing (decapitalize)
-import TypeToJson.Generators.Types exposing (..)
+import TypeToJson.Generator.Types exposing (..)
 import TypeToJson.Interpolate exposing (..)
 import TypeToJson.Types exposing (..)
 
@@ -113,9 +113,6 @@ constructors consts =
                 |> interpolateAll
                     [ ( "gen", indent cs )
                     ]
-
-        d =
-            l "CONSTRUCT" gen
     in
     gen
 
@@ -195,10 +192,6 @@ typeAlias name generics anno =
 
 typed : TypeDef -> GenericsAnnotation -> Ctx -> Ctx
 typed td generics ctx =
-    let
-        d =
-            l "Typed" td
-    in
     ctx
 
 
@@ -352,15 +345,3 @@ typeDef td =
 
         ListDef arg ->
             "(Decode.list {{decoder}})" |> interpolate "decoder" (typeAnnotation arg)
-
-
-
---DEBUG
-
-
-l =
-    Debug.log
-
-
-ll =
-    Debug.log "decode"
