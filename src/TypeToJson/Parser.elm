@@ -37,7 +37,7 @@ parse input =
                     Err <| String.join "\n" <| List.map errorToString err
 
         Err errs ->
-            Err "Parse failed: Dead end to string not supported by elm-syntax"
+            Err <| deadEndsToString errs
 
 
 errorToString : Error -> String
@@ -48,6 +48,64 @@ errorToString e =
 
         Other s ->
             "Error: " ++ s
+
+
+deadEndsToString : List BaseParser.DeadEnd -> String
+deadEndsToString de =
+    case de of
+        [] ->
+            ""
+
+        d :: ds ->
+            let
+                posString =
+                    " at (col, row) : (" ++ String.fromInt d.row ++ ", " ++ String.fromInt d.col ++ ")"
+
+                errMsg =
+                    case d.problem of
+                        BaseParser.Expecting err ->
+                            "Expecting: " ++ err ++ posString
+
+                        BaseParser.ExpectingInt ->
+                            "ExpectingInt" ++ posString
+
+                        BaseParser.ExpectingHex ->
+                            "ExpectingHex" ++ posString
+
+                        BaseParser.ExpectingOctal ->
+                            "ExpectingOctal" ++ posString
+
+                        BaseParser.ExpectingBinary ->
+                            "ExpectingBinary" ++ posString
+
+                        BaseParser.ExpectingFloat ->
+                            "ExpectingFloat" ++ posString
+
+                        BaseParser.ExpectingNumber ->
+                            "ExpectingNumber" ++ posString
+
+                        BaseParser.ExpectingVariable ->
+                            "ExpectingVariable" ++ posString
+
+                        BaseParser.ExpectingSymbol err ->
+                            "ExpectedSymbol: " ++ err ++ posString
+
+                        BaseParser.ExpectingKeyword err ->
+                            "ExpectingKeyword: " ++ err ++ posString
+
+                        BaseParser.ExpectingEnd ->
+                            "ExpectingEnd" ++ posString
+
+                        BaseParser.UnexpectedChar ->
+                            "UnexpectedChar" ++ posString
+
+                        BaseParser.Problem err ->
+                            "Problem: " ++ err ++ posString
+
+                        BaseParser.BadRepeat ->
+                            "BadRepeat" ++ posString
+            in
+            errMsg ++ "\n" ++ deadEndsToString ds
 
 
 getDeclarations : Elm.Syntax.File.File -> ParseResult (List ValidType)
@@ -228,10 +286,6 @@ combine pr prs =
 
         ( Err e1, Err e2 ) ->
             Err (e1 ++ e2)
-
-
-
---DEBUG
 
 
 map : (a -> b) -> ParseResult a -> ParseResult b

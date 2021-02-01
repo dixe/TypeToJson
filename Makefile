@@ -1,5 +1,7 @@
+run-webite:
+	elm-live src/Main.elm
 
-build-web:
+build-website:
 	elm make src/Main.elm --optimize
 
 build-test-worker:

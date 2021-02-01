@@ -37,8 +37,34 @@ update msg model =
 
                         Err err ->
                             err
+
+                typesAndModules =
+                    formatModuleString s
             in
-            ( s, stdout <| s ++ "\n\n" ++ output ++ "\n" )
+            ( s
+            , stdout <|
+                typesAndModules.moduleString
+                    ++ "\n\n"
+                    ++ output
+                    ++ "\n"
+                    ++ typesAndModules.types
+            )
+
+
+type alias TypesAndModules =
+    { types : String, moduleString : String }
+
+
+formatModuleString : String -> TypesAndModules
+formatModuleString modules =
+    { moduleString =
+        String.replace "module TestInputs" "module TestGenerated" <|
+            Maybe.withDefault "" (List.head (String.lines modules))
+    , types =
+        String.replace "module TestInputs" "module TestGenerated" <|
+            String.join "\n" <|
+                Maybe.withDefault [] (List.tail (String.lines modules))
+    }
 
 
 subscriptions : Model -> Sub Msg

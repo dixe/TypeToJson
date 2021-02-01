@@ -1,9 +1,4 @@
-module TestInputs.Record exposing (..)
-
-
-type alias Rec =
-    { stringField : String, intField : Int }
-
+module TestGenerated.Record exposing (..)
 
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (required)
@@ -26,3 +21,7 @@ recDecoder  =
     |> required "stringField" Decode.string
     |> required "intField" Decode.int 
 
+
+
+type alias Rec =
+    { stringField : String, intField : Int }

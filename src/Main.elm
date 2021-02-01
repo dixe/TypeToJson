@@ -51,6 +51,11 @@ type alias Goal =
 """
 
 
+moduleHeader : String
+moduleHeader =
+    "module Test exposing(..)\n"
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( parse { input = test, output = "" }, Cmd.none )
@@ -58,7 +63,7 @@ init _ =
 
 parse : Model -> Model
 parse model =
-    case generate model.input of
+    case generate <| moduleHeader ++ model.input of
         Ok ts ->
             { model | output = ts }
 
