@@ -1,0 +1,14 @@
+Geneate encoder and decoder and check that
+input == decode (encode input)
+
+And that the output is valid json, well it should since we are bassing it on Json.Decode and Json.Encode
+
+fuzzy generation of elm datatypes
+
+
+
+Setup
+create a project to generate fuzzy types, encoders and decoders
+use example from elm elm-to-exe combined with elm-test package to generate theste files, and maybe also the test files
+
+run elm test, importing the generated tests
