@@ -9,4 +9,4 @@ index.html
 
 
 node_modules/
-test/TestGenerate
+tests/TestsGenerated/*

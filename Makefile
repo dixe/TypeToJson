@@ -1,4 +1,4 @@
-run-webite:
+run-website:
 	elm-live src/Main.elm
 
 build-website:
@@ -7,7 +7,7 @@ build-website:
 build-test-worker:
 	elm make src/Worker.elm --optimize --output elm.min.js
 
-test-worker:
+run-test-worker:
 	node TestGenerator.js
 
 clean:
