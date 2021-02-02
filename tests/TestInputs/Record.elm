@@ -1,5 +1,5 @@
 module TestInputs.Record exposing (..)
 
 
-type alias Rec =
+type alias TestType =
     { stringField : String, intField : Int }

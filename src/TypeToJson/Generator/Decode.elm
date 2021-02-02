@@ -3,8 +3,8 @@ module TypeToJson.Generator.Decode exposing (decoderDeclaration, generate)
 import List.Extra
 import String.Extra exposing (decapitalize)
 import TypeToJson.Generator.Types exposing (..)
-import TypeToJson.Interpolate exposing (..)
 import TypeToJson.Types exposing (..)
+import TypeToJson.Utilities exposing (..)
 
 
 imports =
@@ -141,7 +141,7 @@ constructorNoArgument name =
 
 constructorWithArgument : Name -> List TypeAnnotation -> String
 constructorWithArgument name args =
-    """Decode.succeed identity(\\a -> a)
+    """Decode.succeed identity
   |> required "{{name}}"
     (Decode.succeed {{name}}
 {{args}}

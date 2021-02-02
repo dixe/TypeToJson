@@ -2,10 +2,12 @@ module UnitTests exposing (..)
 
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
+import GeneratedTests.AnonymousRecord
+import GeneratedTests.CustomType
+import GeneratedTests.Record
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Test exposing (..)
-import TestGenerated.Record
 
 
 suite : Test
@@ -14,20 +16,29 @@ suite =
         [ test "Simple Record" <|
             \_ ->
                 let
-                    record : TestGenerated.Record.Rec
+                    record : GeneratedTests.Record.TestType
                     record =
-                        { stringField = String, intField = Int }
+                        { stringField = "StringData", intField = 3 }
 
                     encoded =
-                        Encode.encode 0 <| TestGenerated.Record.recEncoder record
+                        Encode.encode 0 <| GeneratedTests.Record.testTypeEncoder record
 
                     decoded =
-                        Decode.decodeString TestGenerated.Record.recDecoder encoded
+                        Decode.decodeString GeneratedTests.Record.testTypeDecoder encoded
                 in
-                case decoded of
-                    Ok rec ->
-                        Expect.equal 0 0
+                Expect.ok decoded
+        , test "Anonymous Record" <|
+            \_ ->
+                let
+                    record : GeneratedTests.AnonymousRecord.TestType
+                    record =
+                        GeneratedTests.AnonymousRecord.C1 { stringField = "StringData", intField = 3 } { field2 = "data2" }
 
-                    Err ->
-                        Expect.err "Decodede error"
+                    encoded =
+                        Encode.encode 0 <| GeneratedTests.AnonymousRecord.testTypeEncoder record
+
+                    decoded =
+                        Decode.decodeString GeneratedTests.AnonymousRecord.testTypeDecoder encoded
+                in
+                Expect.ok decoded
         ]

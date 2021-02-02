@@ -81,12 +81,11 @@ type alias TypesAndModules =
 formatModuleString : String -> TypesAndModules
 formatModuleString modules =
     { moduleString =
-        String.replace "module TestInputs" "module TestGenerated" <|
+        String.replace "module TestInputs" "module GeneratedTests" <|
             Maybe.withDefault "" (List.head (String.lines modules))
     , types =
-        String.replace "module TestInputs" "module TestGenerated" <|
-            String.join "\n" <|
-                Maybe.withDefault [] (List.tail (String.lines modules))
+        String.join "\n" <|
+            Maybe.withDefault [] (List.tail (String.lines modules))
     }
 
 

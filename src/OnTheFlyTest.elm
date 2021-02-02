@@ -55,6 +55,23 @@ testString =
 -- ENCODERS
 
 
+type NewTest2
+    = C1
+    | C2 String
+
+
+newTest2Encoder : NewTest2 -> Encode.Value
+newTest2Encoder newTest2 =
+    case newTest of
+        C1 ->
+            Encode.string "Case1"
+
+        C2 arg1 ->
+            Encode.object
+                [ ( "arg1", Encode.string arg1 )
+                ]
+
+
 goalEncoder : Goal -> Encode.Value
 goalEncoder goal =
     Encode.object

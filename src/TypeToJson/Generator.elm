@@ -3,8 +3,8 @@ module TypeToJson.Generator exposing (generate)
 import TypeToJson.Generator.Decode as DC
 import TypeToJson.Generator.Encode as EC
 import TypeToJson.Generator.Types exposing (..)
-import TypeToJson.Interpolate exposing (..)
 import TypeToJson.Types exposing (..)
+import TypeToJson.Utilities exposing (..)
 
 
 generate : List ValidType -> String

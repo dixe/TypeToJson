@@ -34,7 +34,7 @@ test =
     """
 type alias Point = (Int,Int)
 
-type Generic a = Test a
+type Generic = Test { stringField : String, intField : Int }
 
 type Beta = Meta (TT String)
 

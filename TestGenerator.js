@@ -14,7 +14,7 @@ const app = Elm.Worker.init();
 
 const inputDir = path.join(__dirname, 'tests/TestInputs');
 
-const outputDir = path.join(__dirname, 'tests/TestGenerated');
+const outputDir = path.join(__dirname, 'tests/GeneratedTests');
 if(!fs.existsSync(outputDir))
 {
     console.log("Creating outputdir : " +outputDir);

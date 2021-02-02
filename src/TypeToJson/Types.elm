@@ -7,7 +7,6 @@ type alias Name =
 
 type ValidType
     = TypeAlias Name GenericsAnnotation TypeAnnotation
-      --    | CustomType      {nameString Constructor (List Construc2tor)
     | CustomType Name GenericsAnnotation Constructor (List Constructor)
 
 
@@ -24,7 +23,6 @@ type alias Constructor =
 type TypeAnnotation
     = Record RecordDefinition
     | Typed TypeDef
-      --    | Generic (List TypeAnnotation)
     | Tuple (List TypeAnnotation)
 
 

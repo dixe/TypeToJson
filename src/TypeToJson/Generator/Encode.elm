@@ -3,8 +3,8 @@ module TypeToJson.Generator.Encode exposing (encoderDeclaration, generate)
 import List.Extra
 import String.Extra exposing (decapitalize)
 import TypeToJson.Generator.Types exposing (..)
-import TypeToJson.Interpolate exposing (..)
 import TypeToJson.Types exposing (..)
+import TypeToJson.Utilities exposing (..)
 
 
 imports =
@@ -24,42 +24,17 @@ generate ctx types =
 
 encoderDeclaration : Coder -> String
 encoderDeclaration d =
-    let
-        typeArgs =
-            String.join " " <| List.map (\x -> "Encode.Value " ++ x ++ "->") d.generics
-
-        args =
-            String.join " " <| List.map (\x -> x ++ "Encoder") d.generics
-    in
     """
-{{name}}Encoder : {{typeArgs}} Encode.Value {{Name}}
+{{name}}Encoder : {{typeArgs}} -> Encode.Value
 {{name}}Encoder {{args}} =
 {{impl}}"""
         |> interpolateAll
             [ ( "name", decapitalize d.typeName )
             , ( "Name", d.typeName )
             , ( "impl", indent d.implementation )
-            , ( "typeArgs", typeArgs )
-            , ( "args", args )
+            , ( "typeArgs", d.typeName )
+            , ( "args", decapitalize d.typeName )
             ]
-
-
-spaces : Int
-spaces =
-    2
-
-
-indent : String -> String
-indent =
-    indentWith spaces
-
-
-indentWith : Int -> String -> String
-indentWith space s =
-    s
-        |> String.lines
-        |> List.map (\x -> String.repeat space " " ++ x)
-        |> String.join "\n"
 
 
 
@@ -89,66 +64,56 @@ customType : Name -> GenericsAnnotation -> List Constructor -> Ctx -> Ctx
 customType name generics consts ctx =
     let
         gen =
-            constructors consts
+            constructors name consts
     in
     addEncoder ctx { typeName = name, implementation = gen, generics = generics }
 
 
-constructors : List Constructor -> String
-constructors consts =
+constructors : Name -> List Constructor -> String
+constructors name consts =
     let
         cs =
-            "[ {{cs}}"
-                ++ "\n]"
-                |> interpolateAll
-                    [ ( "cs", String.join "\n, " (List.map constructor consts) )
-                    ]
+            String.join "\n" (List.map constructor consts)
 
         gen =
-            """Encode.oneOf
-{{gen}}
-
+            """case {{name}} of
+{{constructors}}
 """
                 |> interpolateAll
-                    [ ( "gen", indent cs )
+                    [ ( "constructors", indent cs )
+                    , ( "name", decapitalize name )
                     ]
     in
     gen
 
 
-caseHelper : Name -> String
-caseHelper name =
-    """(\\s ->
-   if s == "{{name}}" then
-      Encode.succeed {{name}}
-   else
-      Encode.fail ""
-)""" |> interpolate "name" name
-
-
+constructorNoArgument : Name -> String
 constructorNoArgument name =
-    let
-        base =
-            """Encode.string
-    |> Encode.andThen"""
-
-        gen =
-            "{{caseHelper}}" |> interpolate "caseHelper" (caseHelper name)
-    in
-    (base ++ "\n{{gen}}") |> interpolate "gen" (indentWith 8 <| gen)
+    """{{name}} -> Encode.string "{{name}}" """ |> interpolate "name" name
 
 
 constructorWithArgument : Name -> List TypeAnnotation -> String
 constructorWithArgument name args =
-    """Encode.succeed (\\a -> a)
-  |> required "{{name}}"
-    (Encode.succeed {{name}}
-{{args}}
-    ) """
+    let
+        rows =
+            []
+    in
+    """{{name}} {{args}} ->
+    Encode.object [ ("{{name}}" , Encode.object
+{{argRows}}
+           )
+       ]
+ """
         |> interpolateAll
             [ ( "name", name )
-            , ( "args", String.join "\n" <| arguments 0 args )
+            , ( "args", String.join " " <| argumentsList (List.length args) )
+            , ( "argRows", indentWith 12 <| "[" ++ (String.join "\n, " <| arguments 0 args) ++ "\n]" )
             ]
+
+
+argumentsList : Int -> List String
+argumentsList count =
+    List.map (\x -> "arg" ++ String.fromInt x) <| List.range 0 (count - 1)
 
 
 arguments : Int -> List TypeAnnotation -> List String
@@ -158,12 +123,12 @@ arguments index tas =
             []
 
         t :: ts ->
-            indentWith 8
-                (String.join " "
-                    [ "|> required \"arg{{index}}\"" |> interpolate "index" (String.fromInt index)
-                    , typeAnnotation t
+            ("""("arg{{index}}", {{encoder}} arg{{index}})"""
+                |> interpolateAll
+                    [ ( "index", String.fromInt index )
+                    , ( "encoder", typeAnnotation t )
                     ]
-                )
+            )
                 :: arguments (index + 1) ts
 
 
@@ -198,45 +163,76 @@ typeAnnotation : TypeAnnotation -> String
 typeAnnotation anno =
     case anno of
         Record rec ->
-            indentWith 8 <| anonymousRecord rec
+            indentWith 2 <| anonymousRecord rec
 
         Tuple def ->
-            ""
+            "TUPLE TODO"
 
         --            indentWith 8 <| anonymousTuple def
         Typed td ->
-            ""
-
-
-
---            typeDef td
+            typeDef td
 
 
 record : Name -> GenericsAnnotation -> RecordDefinition -> Ctx -> Ctx
 record name generics def ctx =
     let
         rows =
-            List.map recordField def
+            List.map (recordField name) def
 
         impl =
             """Encode.object
-{{rows}}"""
+       [
+{{rows}}
+      ]"""
                 |> interpolateAll
-                    [ ( "rows", String.join "\n" rows )
+                    [ ( "rows", indentWith 8 <| String.join "\n," rows )
                     ]
     in
     addEncoder ctx { typeName = name, implementation = impl, generics = generics }
 
 
-recordField : { name : String, anno : TypeAnnotation } -> String
-recordField { name, anno } =
-    """ ("{{fieldName}}", {{encoder}} {{fieldName}} )"""
+recordField : Name -> { name : String, anno : TypeAnnotation } -> String
+recordField recordName { name, anno } =
+    """ ("{{fieldName}}", {{encoder}} {{recordName}}{{fieldName}} )"""
         |> interpolateAll
             [ ( "fieldName", name )
             , ( "encoder", typeAnnotation anno )
+            , ( "recordName"
+              , case recordName of
+                    "" ->
+                        ""
+
+                    n ->
+                        decapitalize n ++ "."
+              )
             ]
 
 
 anonymousRecord : RecordDefinition -> String
 anonymousRecord def =
-    String.join "\n" <| List.map recordField def
+    """(\\ {{args}} ->
+Encode.object [
+{{rows}}
+])"""
+        |> interpolateAll
+            [ ( "rows", indentWith 4 <| String.join "\n, " <| List.map (recordField "") def )
+            , ( "args", "{ " ++ (String.join ", " <| List.map (\d -> d.name) def) ++ " }" )
+            ]
+
+
+typeDef : TypeDef -> String
+typeDef td =
+    case td of
+        Type t ->
+            case t of
+                "String" ->
+                    "Encode.string"
+
+                "Int" ->
+                    "Encode.int"
+
+                n ->
+                    "{{name}}Encoder" |> interpolate "name" (decapitalize n)
+
+        ListDef arg ->
+            "Encode.list {{encoder}}" |> interpolate "encoder" (typeAnnotation arg)

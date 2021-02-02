@@ -1,7 +1,7 @@
 module TestInputs.CustomType exposing (..)
 
 
-type Custom
+type TestType
     = C1
     | C2 String
     | C3
