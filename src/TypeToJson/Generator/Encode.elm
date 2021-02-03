@@ -148,29 +148,29 @@ typeAlias name generics anno =
             record name generics rec
 
         Tuple args ->
-            identity
+            tuple name generics args
 
         --            tuple name generics args
         Typed td ->
             identity
 
 
+tuple : Name -> GenericsAnnotation -> List TypeAnnotation -> Ctx -> Ctx
+tuple name generics types ctx =
+    let
+        rows =
+            []
 
---            typed td generics
-
-
-typeAnnotation : TypeAnnotation -> String
-typeAnnotation anno =
-    case anno of
-        Record rec ->
-            indentWith 2 <| anonymousRecord rec
-
-        Tuple def ->
-            "TUPLE TODO"
-
-        --            indentWith 8 <| anonymousTuple def
-        Typed td ->
-            typeDef td
+        impl =
+            """Encode.object
+       [
+{{rows}}
+       ]"""
+                |> interpolateAll
+                    [ ( "rows", indentWith 8 <| "make rows" )
+                    ]
+    in
+    addEncoder ctx { typeName = name, implementation = impl, generics = generics }
 
 
 record : Name -> GenericsAnnotation -> RecordDefinition -> Ctx -> Ctx
@@ -191,6 +191,20 @@ record name generics def ctx =
     addEncoder ctx { typeName = name, implementation = impl, generics = generics }
 
 
+typeAnnotation : TypeAnnotation -> String
+typeAnnotation anno =
+    case anno of
+        Record rec ->
+            indentWith 2 <| anonymousRecord rec
+
+        Tuple def ->
+            anonymoustuple def
+
+        --            indentWith 8 <| anonymousTuple def
+        Typed td ->
+            typeDef td
+
+
 recordField : Name -> { name : String, anno : TypeAnnotation } -> String
 recordField recordName { name, anno } =
     """ ("{{fieldName}}", {{encoder}} {{recordName}}{{fieldName}} )"""
@@ -206,6 +220,36 @@ recordField recordName { name, anno } =
                         decapitalize n ++ "."
               )
             ]
+
+
+anonymoustuple : List TypeAnnotation -> String
+anonymoustuple types =
+    """(\\ ({{args}})->
+    Encode.object [
+{{rows}}
+    ])"""
+        |> interpolateAll
+            [ ( "args", String.join ", " <| List.map (\x -> "item" ++ String.fromInt x) <| List.range 0 (List.length types - 1) )
+            , ( "rows", indentWith 8 <| String.join "\n," <| tupleRows 0 types )
+            ]
+
+
+tupleRows : Int -> List TypeAnnotation -> List String
+tupleRows index tas =
+    case tas of
+        [] ->
+            []
+
+        t :: ts ->
+            let
+                row =
+                    """("item{{index}}", {{encoder}} item{{index}}) """
+                        |> interpolateAll
+                            [ ( "index", String.fromInt index )
+                            , ( "encoder", typeAnnotation t )
+                            ]
+            in
+            row :: tupleRows (index + 1) ts
 
 
 anonymousRecord : RecordDefinition -> String

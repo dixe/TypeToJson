@@ -32,7 +32,9 @@ type alias Model =
 
 test =
     """
-type alias Point = (Int,Int)
+type Point = P (Int,Int)
+
+type alias P2 = (String, Int)
 
 type Generic = Test { stringField : String, intField : Int }
 
