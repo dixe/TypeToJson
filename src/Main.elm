@@ -32,7 +32,7 @@ type alias Model =
 
 test =
     """
-type Point = P (Int,Int)
+type Point = P (Int,(String,Int))
 
 type alias P2 = (String, Int)
 

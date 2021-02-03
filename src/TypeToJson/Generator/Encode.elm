@@ -158,16 +158,31 @@ typeAlias name generics anno =
 tuple : Name -> GenericsAnnotation -> List TypeAnnotation -> Ctx -> Ctx
 tuple name generics types ctx =
     let
-        rows =
-            []
+        rows : Int -> List TypeAnnotation -> List String
+        rows index tas =
+            case tas of
+                [] ->
+                    []
+
+                t :: ts ->
+                    ("""("item{{index}}", {{encoder}} item{{index}})"""
+                        |> interpolateAll
+                            [ ( "index", String.fromInt index )
+                            , ( "encoder", typeAnnotation t )
+                            ]
+                    )
+                        :: rows (index + 1) ts
 
         impl =
-            """Encode.object
-       [
+            """(\\ ({{args}}) ->
+    Encode.object
+           [
 {{rows}}
-       ]"""
+           ]) {{name}} """
                 |> interpolateAll
-                    [ ( "rows", indentWith 8 <| "make rows" )
+                    [ ( "rows", indentWith 12 <| String.join "\n," (rows 0 types) )
+                    , ( "name", decapitalize name )
+                    , ( "args", String.join ", " <| List.map (\x -> "item" ++ String.fromInt x) <| List.range 0 (List.length types - 1) )
                     ]
     in
     addEncoder ctx { typeName = name, implementation = impl, generics = generics }
@@ -224,7 +239,7 @@ recordField recordName { name, anno } =
 
 anonymoustuple : List TypeAnnotation -> String
 anonymoustuple types =
-    """(\\ ({{args}})->
+    """(\\ ({{args}}) ->
     Encode.object [
 {{rows}}
     ])"""
