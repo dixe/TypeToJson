@@ -7,6 +7,10 @@ import TypeToJson.Types exposing (..)
 import TypeToJson.Utilities exposing (..)
 
 
+type alias Depth =
+    Int
+
+
 imports =
     [ "Json.Encode as Encode"
     ]
@@ -24,16 +28,26 @@ generate ctx types =
 
 encoderDeclaration : Coder -> String
 encoderDeclaration d =
+    let
+        genericTypeArgs =
+            String.join " " <| List.map (\x -> "( " ++ x ++ " -> Encode.Value) " ++ " ->") d.generics
+
+        genericArgs =
+            String.join " " <| List.map (\x -> x ++ "Encoder") d.generics
+    in
     """
-{{name}}Encoder : {{typeArgs}} -> Encode.Value
-{{name}}Encoder {{args}} =
+{{name}}Encoder : {{genericTypeArgs}} {{typeArgs}} {{generics}} -> Encode.Value
+{{name}}Encoder {{genericsArgs}} {{args}} =
 {{impl}}"""
         |> interpolateAll
             [ ( "name", decapitalize d.typeName )
             , ( "Name", d.typeName )
             , ( "impl", indent d.implementation )
             , ( "typeArgs", d.typeName )
+            , ( "generics", String.join " " d.generics )
             , ( "args", decapitalize d.typeName )
+            , ( "genericsArgs", genericArgs )
+            , ( "genericTypeArgs", genericTypeArgs )
             ]
 
 
@@ -92,8 +106,8 @@ constructorNoArgument name =
     """{{name}} -> Encode.string "{{name}}" """ |> interpolate "name" name
 
 
-constructorWithArgument : Name -> List TypeAnnotation -> String
-constructorWithArgument name args =
+constructorWithArgument : Depth -> Name -> List TypeAnnotation -> String
+constructorWithArgument depth name args =
     let
         rows =
             []
@@ -107,7 +121,7 @@ constructorWithArgument name args =
         |> interpolateAll
             [ ( "name", name )
             , ( "args", String.join " " <| argumentsList (List.length args) )
-            , ( "argRows", indentWith 12 <| "[" ++ (String.join "\n, " <| arguments 0 args) ++ "\n]" )
+            , ( "argRows", indentWith 12 <| "[" ++ (String.join "\n, " <| arguments depth 0 args) ++ "\n]" )
             ]
 
 
@@ -116,8 +130,8 @@ argumentsList count =
     List.map (\x -> "arg" ++ String.fromInt x) <| List.range 0 (count - 1)
 
 
-arguments : Int -> List TypeAnnotation -> List String
-arguments index tas =
+arguments : Depth -> Int -> List TypeAnnotation -> List String
+arguments depth index tas =
     case tas of
         [] ->
             []
@@ -126,10 +140,10 @@ arguments index tas =
             ("""("arg{{index}}", {{encoder}} arg{{index}})"""
                 |> interpolateAll
                     [ ( "index", String.fromInt index )
-                    , ( "encoder", typeAnnotation t )
+                    , ( "encoder", typeAnnotation depth t )
                     ]
             )
-                :: arguments (index + 1) ts
+                :: arguments depth (index + 1) ts
 
 
 constructor : Constructor -> String
@@ -138,7 +152,7 @@ constructor c =
         constructorNoArgument c.name
 
     else
-        constructorWithArgument c.name c.arguments
+        constructorWithArgument 0 c.name c.arguments
 
 
 typeAlias : Name -> GenericsAnnotation -> TypeAnnotation -> Ctx -> Ctx
@@ -168,7 +182,7 @@ tuple name generics types ctx =
                     ("""("item{{index}}", {{encoder}} item{{index}})"""
                         |> interpolateAll
                             [ ( "index", String.fromInt index )
-                            , ( "encoder", typeAnnotation t )
+                            , ( "encoder", typeAnnotation 0 t )
                             ]
                     )
                         :: rows (index + 1) ts
@@ -192,7 +206,7 @@ record : Name -> GenericsAnnotation -> RecordDefinition -> Ctx -> Ctx
 record name generics def ctx =
     let
         rows =
-            List.map (recordField name) def
+            List.map (recordField 0 name) def
 
         impl =
             """Encode.object
@@ -206,26 +220,25 @@ record name generics def ctx =
     addEncoder ctx { typeName = name, implementation = impl, generics = generics }
 
 
-typeAnnotation : TypeAnnotation -> String
-typeAnnotation anno =
+typeAnnotation : Depth -> TypeAnnotation -> String
+typeAnnotation depth anno =
     case anno of
         Record rec ->
-            indentWith 2 <| anonymousRecord rec
+            indentWith 2 <| anonymousRecord depth rec
 
         Tuple def ->
-            anonymoustuple def
+            anonymoustuple (depth + 1) def
 
-        --            indentWith 8 <| anonymousTuple def
         Typed td ->
-            typeDef td
+            typeDef depth td
 
 
-recordField : Name -> { name : String, anno : TypeAnnotation } -> String
-recordField recordName { name, anno } =
+recordField : Depth -> Name -> { name : String, anno : TypeAnnotation } -> String
+recordField depth recordName { name, anno } =
     """ ("{{fieldName}}", {{encoder}} {{recordName}}{{fieldName}} )"""
         |> interpolateAll
             [ ( "fieldName", name )
-            , ( "encoder", typeAnnotation anno )
+            , ( "encoder", typeAnnotation depth anno )
             , ( "recordName"
               , case recordName of
                     "" ->
@@ -237,20 +250,24 @@ recordField recordName { name, anno } =
             ]
 
 
-anonymoustuple : List TypeAnnotation -> String
-anonymoustuple types =
+anonymoustuple : Depth -> List TypeAnnotation -> String
+anonymoustuple depth types =
+    let
+        itemsWithDepth =
+            "item" ++ String.fromInt depth ++ "_"
+    in
     """(\\ ({{args}}) ->
     Encode.object [
 {{rows}}
     ])"""
         |> interpolateAll
-            [ ( "args", String.join ", " <| List.map (\x -> "item" ++ String.fromInt x) <| List.range 0 (List.length types - 1) )
-            , ( "rows", indentWith 8 <| String.join "\n," <| tupleRows 0 types )
+            [ ( "args", String.join ", " <| List.map (\x -> itemsWithDepth ++ String.fromInt x) <| List.range 0 (List.length types - 1) )
+            , ( "rows", indentWith 8 <| String.join "\n," <| tupleRows itemsWithDepth 0 types )
             ]
 
 
-tupleRows : Int -> List TypeAnnotation -> List String
-tupleRows index tas =
+tupleRows : String -> Int -> List TypeAnnotation -> List String
+tupleRows itemWithDepth index tas =
     case tas of
         [] ->
             []
@@ -258,29 +275,30 @@ tupleRows index tas =
         t :: ts ->
             let
                 row =
-                    """("item{{index}}", {{encoder}} item{{index}}) """
+                    """("item{{index}}", {{encoder}} {{itemWithDepth}}{{index}}) """
                         |> interpolateAll
                             [ ( "index", String.fromInt index )
-                            , ( "encoder", typeAnnotation t )
+                            , ( "encoder", typeAnnotation 0 t )
+                            , ( "itemWithDepth", itemWithDepth )
                             ]
             in
-            row :: tupleRows (index + 1) ts
+            row :: tupleRows itemWithDepth (index + 1) ts
 
 
-anonymousRecord : RecordDefinition -> String
-anonymousRecord def =
+anonymousRecord : Depth -> RecordDefinition -> String
+anonymousRecord depth def =
     """(\\ {{args}} ->
 Encode.object [
 {{rows}}
 ])"""
         |> interpolateAll
-            [ ( "rows", indentWith 4 <| String.join "\n, " <| List.map (recordField "") def )
+            [ ( "rows", indentWith 4 <| String.join "\n, " <| List.map (recordField depth "") def )
             , ( "args", "{ " ++ (String.join ", " <| List.map (\d -> d.name) def) ++ " }" )
             ]
 
 
-typeDef : TypeDef -> String
-typeDef td =
+typeDef : Depth -> TypeDef -> String
+typeDef depth td =
     case td of
         Type t ->
             case t of
@@ -294,4 +312,4 @@ typeDef td =
                     "{{name}}Encoder" |> interpolate "name" (decapitalize n)
 
         ListDef arg ->
-            "Encode.list {{encoder}}" |> interpolate "encoder" (typeAnnotation arg)
+            "Encode.list {{encoder}}" |> interpolate "encoder" (typeAnnotation depth arg)

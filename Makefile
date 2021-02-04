@@ -11,6 +11,10 @@ build-and-run-test-worker:
 
 	make build-test-worker
 	make run-test-worker
+
+run-test-watcher:
+	elm-test --watch
+
 run-test-worker:
 	node TestGenerator.js
 

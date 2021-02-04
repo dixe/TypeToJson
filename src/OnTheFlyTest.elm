@@ -9,6 +9,13 @@ type alias Point =
     ( Int, Int )
 
 
+type alias P2 =
+    ( String, (Int,Int) )
+
+
+
+let
+
 type TT a
     = Test a
 
@@ -24,7 +31,6 @@ type NewTest
 
 type alias Goal =
     { des : String, test : String, id : Int, newTest : NewTest, nt : NewTest }
-
 
 try : String
 try =

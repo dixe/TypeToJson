@@ -33,7 +33,7 @@ decoderDeclaration d =
             String.join " " <| List.map (\x -> x ++ "Decoder") d.generics
     in
     """
-{{name}}Decoder : {{typeArgs}} Decode.Decoder {{Name}}
+{{name}}Decoder : {{typeArgs}} Decode.Decoder ({{Name}} {{generics}})
 {{name}}Decoder {{args}} =
 {{impl}}"""
         |> interpolateAll
@@ -42,6 +42,7 @@ decoderDeclaration d =
             , ( "impl", indent d.implementation )
             , ( "typeArgs", typeArgs )
             , ( "args", args )
+            , ( "generics", String.join " " d.generics )
             ]
 
 
@@ -289,7 +290,30 @@ anonType { requires, construction, names } =
 
 tuple : Name -> GenericsAnnotation -> List TypeAnnotation -> Ctx -> Ctx
 tuple name generics args ctx =
-    ctx
+    let
+        rows : Int -> List TypeAnnotation -> List String
+        rows index tas =
+            case tas of
+                [] ->
+                    []
+
+                t :: ts ->
+                    ("""|> required "item{{index}}" {{encoder}}"""
+                        |> interpolateAll
+                            [ ( "index", String.fromInt index )
+                            , ( "encoder", typeAnnotation t )
+                            ]
+                    )
+                        :: rows (index + 1) ts
+
+        gen =
+            String.join "\n" <| rows 0 args
+
+        impl : String
+        impl =
+            anonymousTuple args
+    in
+    addDecoder ctx { typeName = name, implementation = impl, generics = generics }
 
 
 record : Name -> GenericsAnnotation -> RecordDefinition -> Ctx -> Ctx
@@ -304,7 +328,6 @@ record name generics def ctx =
                 |> interpolateAll
                     [ ( "Name", name )
                     , ( "gen", indent gen )
-                    , ( "name", decapitalize name )
                     ]
     in
     addDecoder ctx { typeName = name, implementation = impl, generics = generics }

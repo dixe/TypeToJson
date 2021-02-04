@@ -5,6 +5,8 @@ import Fuzz exposing (Fuzzer, int, list, string)
 import GeneratedTests.AnonymousRecord
 import GeneratedTests.AnonymousTuples
 import GeneratedTests.CustomType
+import GeneratedTests.Generics
+import GeneratedTests.NestedTuples
 import GeneratedTests.Record
 import GeneratedTests.Tuples
 import Json.Decode as Decode
@@ -74,6 +76,34 @@ suite =
 
                     decoded =
                         Decode.decodeString GeneratedTests.Tuples.testTypeDecoder encoded
+                in
+                Expect.ok decoded
+        , test "NestedTuples" <|
+            \_ ->
+                let
+                    data : GeneratedTests.NestedTuples.TestType
+                    data =
+                        ( "TestData", ( 1, 3 ) )
+
+                    encoded =
+                        Encode.encode 0 <| GeneratedTests.NestedTuples.testTypeEncoder data
+
+                    decoded =
+                        Decode.decodeString GeneratedTests.NestedTuples.testTypeDecoder encoded
+                in
+                Expect.ok decoded
+        , test "Generics" <|
+            \_ ->
+                let
+                    data : GeneratedTests.Generics.TestType Int String
+                    data =
+                        GeneratedTests.Generics.C2 1 2 "TestData"
+
+                    encoded =
+                        Encode.encode 0 <| GeneratedTests.Generics.testTypeEncoder Encode.int Encode.string data
+
+                    decoded =
+                        Decode.decodeString (GeneratedTests.Generics.testTypeDecoder Decode.int Decode.string) encoded
                 in
                 Expect.ok decoded
         ]

@@ -32,17 +32,20 @@ type alias Model =
 
 test =
     """
+
+type TestType a b
+    = C1 a
+    | C2 String a
+    | C3 b
+
+
 type Point = P (Int,(String,Int))
 
-type alias P2 = (String, Int)
+type alias P2 = (String, (Int,(Int,(String,Int))))
 
 type Generic = Test { stringField : String, intField : Int }
 
 type Beta = Meta (TT String)
-
-type NewTest
-    = Case1 (String,Int)
-    | Case2 String { a : String, b : List Int, c : (NewTest,Int), d : String }
 
 
 
