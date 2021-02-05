@@ -14,9 +14,9 @@ The types of test are Basic records, Custom types, AnonymousRecord ect.
 # TODO
 Implement support for
 
-* Array
-* Char
-* Dict
-* Maybe
-* Result
-* Set
+- [ ] Array
+- [ ] Char
+- [ ] Dict
+- [ ] Maybe
+- [ ] Result
+- [x] Set
