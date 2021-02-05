@@ -1,6 +1,9 @@
 module TypeToJson.Generator.Decode exposing (decoderDeclaration, generate)
 
+import Json.Decode as Decode
+import Json.Decode.Extra
 import List.Extra
+import Set
 import String.Extra exposing (decapitalize)
 import TypeToJson.Generator.Types exposing (..)
 import TypeToJson.Types exposing (..)
@@ -10,6 +13,9 @@ import TypeToJson.Utilities exposing (..)
 imports =
     [ "Json.Decode as Decode"
     , "Json.Decode.Pipeline exposing (required)"
+    , "Set exposing(Set)"
+    , "Dict"
+    , "Json.Decode.Extra"
     ]
 
 
@@ -26,8 +32,9 @@ generate ctx types =
 decoderDeclaration : Coder -> String
 decoderDeclaration d =
     let
+        --TODO make generics into comparable where needed, like set and
         typeArgs =
-            String.join " " <| List.map (\x -> "Decode.Decoder " ++ x ++ "->") d.generics
+            String.join " " <| List.map (\x -> "Decode.Decoder " ++ x ++ "->") d.mappedGenerics
 
         args =
             String.join " " <| List.map (\x -> x ++ "Decoder") d.generics
@@ -42,7 +49,7 @@ decoderDeclaration d =
             , ( "impl", indent d.implementation )
             , ( "typeArgs", typeArgs )
             , ( "args", args )
-            , ( "generics", String.join " " d.generics )
+            , ( "generics", String.join " " d.mappedGenerics )
             ]
 
 
@@ -93,7 +100,7 @@ customType name generics consts ctx =
         gen =
             constructors consts
     in
-    addDecoder ctx { typeName = name, implementation = gen, generics = generics }
+    addDecoder ctx { typeName = name, implementation = gen, generics = generics, mappedGenerics = generics }
 
 
 constructors : List Constructor -> String
@@ -188,12 +195,26 @@ typeAlias name generics anno =
             tuple name generics args
 
         Typed td ->
-            typed td generics
+            typed name td generics
 
 
-typed : TypeDef -> GenericsAnnotation -> Ctx -> Ctx
-typed td generics ctx =
-    ctx
+typed : Name -> TypeDef -> GenericsAnnotation -> Ctx -> Ctx
+typed name td generics ctx =
+    let
+        args =
+            String.join " " <| List.map (\g -> g ++ "Decoder") generics
+
+        impl =
+            "{{decoder}} {{args}}"
+                |> interpolateAll
+                    [ ( "decoder", typeDef td )
+                    , ( "args", args )
+                    ]
+
+        mappedGenerics =
+            mapGenerics td generics
+    in
+    addDecoder ctx { typeName = name, implementation = impl, generics = generics, mappedGenerics = mappedGenerics }
 
 
 typeAnnotation : TypeAnnotation -> String
@@ -313,7 +334,7 @@ tuple name generics args ctx =
         impl =
             anonymousTuple args
     in
-    addDecoder ctx { typeName = name, implementation = impl, generics = generics }
+    addDecoder ctx { typeName = name, implementation = impl, generics = generics, mappedGenerics = generics }
 
 
 record : Name -> GenericsAnnotation -> RecordDefinition -> Ctx -> Ctx
@@ -330,7 +351,7 @@ record name generics def ctx =
                     , ( "gen", indent gen )
                     ]
     in
-    addDecoder ctx { typeName = name, implementation = impl, generics = generics }
+    addDecoder ctx { typeName = name, implementation = impl, generics = generics, mappedGenerics = generics }
 
 
 recordDefinition : RecordDefinition -> List String
@@ -362,6 +383,15 @@ typeDef td =
 
                 "Int" ->
                     "Decode.int"
+
+                "Float" ->
+                    "Decode.float"
+
+                "Dict" ->
+                    "Json.Decode.Extra.dict2"
+
+                "Set" ->
+                    "Json.Decode.Extra.set"
 
                 n ->
                     "(Decode.lazy (\\_ -> {{name}}Decoder))" |> interpolate "name" (decapitalize n)

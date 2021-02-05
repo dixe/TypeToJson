@@ -85,7 +85,8 @@ formatModuleString modules =
             Maybe.withDefault "" (List.head (String.lines modules))
     , types =
         String.join "\n" <|
-            Maybe.withDefault [] (List.tail (String.lines modules))
+            List.filter (\x -> not (String.startsWith "import" x)) <|
+                Maybe.withDefault [] (List.tail (String.lines modules))
     }
 
 

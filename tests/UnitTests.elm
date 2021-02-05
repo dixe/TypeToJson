@@ -6,11 +6,14 @@ import GeneratedTests.AnonymousRecord
 import GeneratedTests.AnonymousTuples
 import GeneratedTests.CustomType
 import GeneratedTests.Generics
+import GeneratedTests.NestedRecord
 import GeneratedTests.NestedTuples
 import GeneratedTests.Record
+import GeneratedTests.Sets
 import GeneratedTests.Tuples
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Set
 import Test exposing (..)
 
 
@@ -92,6 +95,25 @@ suite =
                         Decode.decodeString GeneratedTests.NestedTuples.testTypeDecoder encoded
                 in
                 Expect.ok decoded
+        , test "NestedRecord" <|
+            \_ ->
+                let
+                    data : GeneratedTests.NestedRecord.TestType
+                    data =
+                        { stringField = "StringData"
+                        , intField =
+                            { stringField = "StringDate2"
+                            , floatField = 2
+                            }
+                        }
+
+                    encoded =
+                        Encode.encode 0 <| GeneratedTests.NestedRecord.testTypeEncoder data
+
+                    decoded =
+                        Decode.decodeString GeneratedTests.NestedRecord.testTypeDecoder encoded
+                in
+                Expect.ok decoded
         , test "Generics" <|
             \_ ->
                 let
@@ -104,6 +126,20 @@ suite =
 
                     decoded =
                         Decode.decodeString (GeneratedTests.Generics.testTypeDecoder Decode.int Decode.string) encoded
+                in
+                Expect.ok decoded
+        , test "Sets" <|
+            \_ ->
+                let
+                    data : GeneratedTests.Sets.TestType String
+                    data =
+                        Set.fromList [ "TestData", "genData" ]
+
+                    encoded =
+                        Encode.encode 0 <| GeneratedTests.Sets.testTypeEncoder Encode.string data
+
+                    decoded =
+                        Decode.decodeString (GeneratedTests.Sets.testTypeDecoder Decode.string) encoded
                 in
                 Expect.ok decoded
         ]

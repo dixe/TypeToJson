@@ -1,4 +1,6 @@
-module TypeToJson.Utilities exposing (indent, indentWith, interpolate, interpolateAll)
+module TypeToJson.Utilities exposing (indent, indentWith, interpolate, interpolateAll, mapGenerics)
+
+import TypeToJson.Types exposing (GenericsAnnotation, TypeDef(..))
 
 
 interpolateAll : List ( String, String ) -> String -> String
@@ -32,3 +34,18 @@ indentWith space s =
         |> String.lines
         |> List.map (\x -> String.repeat space " " ++ x)
         |> String.join "\n"
+
+
+mapGenerics : TypeDef -> GenericsAnnotation -> GenericsAnnotation
+mapGenerics td generics =
+    case td of
+        Type t ->
+            case t of
+                "Set" ->
+                    [ "comparable" ]
+
+                _ ->
+                    generics
+
+        _ ->
+            generics

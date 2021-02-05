@@ -32,7 +32,13 @@ type alias Model =
 
 test =
     """
+type alias SSet a = Set a
 
+"""
+
+
+test2 =
+    """
 type TestType a b
     = C1 a
     | C2 String a

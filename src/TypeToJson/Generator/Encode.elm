@@ -30,7 +30,7 @@ encoderDeclaration : Coder -> String
 encoderDeclaration d =
     let
         genericTypeArgs =
-            String.join " " <| List.map (\x -> "( " ++ x ++ " -> Encode.Value) " ++ " ->") d.generics
+            String.join " " <| List.map (\x -> "( " ++ x ++ " -> Encode.Value) " ++ " ->") d.mappedGenerics
 
         genericArgs =
             String.join " " <| List.map (\x -> x ++ "Encoder") d.generics
@@ -44,7 +44,7 @@ encoderDeclaration d =
             , ( "Name", d.typeName )
             , ( "impl", indent d.implementation )
             , ( "typeArgs", d.typeName )
-            , ( "generics", String.join " " d.generics )
+            , ( "generics", String.join " " d.mappedGenerics )
             , ( "args", decapitalize d.typeName )
             , ( "genericsArgs", genericArgs )
             , ( "genericTypeArgs", genericTypeArgs )
@@ -80,7 +80,7 @@ customType name generics consts ctx =
         gen =
             constructors name consts
     in
-    addEncoder ctx { typeName = name, implementation = gen, generics = generics }
+    addEncoder ctx { typeName = name, implementation = gen, generics = generics, mappedGenerics = generics }
 
 
 constructors : Name -> List Constructor -> String
@@ -164,9 +164,28 @@ typeAlias name generics anno =
         Tuple args ->
             tuple name generics args
 
-        --            tuple name generics args
         Typed td ->
-            identity
+            typed name td generics
+
+
+typed : Name -> TypeDef -> GenericsAnnotation -> Ctx -> Ctx
+typed name td generics ctx =
+    let
+        args =
+            String.join " " <| List.map (\g -> g ++ "Encoder") generics
+
+        impl =
+            "{{encoder}} {{args}} {{name}}"
+                |> interpolateAll
+                    [ ( "encoder", typeDef 0 td )
+                    , ( "args", args )
+                    , ( "name", decapitalize name )
+                    ]
+
+        mappedGenerics =
+            mapGenerics td generics
+    in
+    addEncoder ctx { typeName = name, implementation = impl, generics = generics, mappedGenerics = mappedGenerics }
 
 
 tuple : Name -> GenericsAnnotation -> List TypeAnnotation -> Ctx -> Ctx
@@ -199,7 +218,7 @@ tuple name generics types ctx =
                     , ( "args", String.join ", " <| List.map (\x -> "item" ++ String.fromInt x) <| List.range 0 (List.length types - 1) )
                     ]
     in
-    addEncoder ctx { typeName = name, implementation = impl, generics = generics }
+    addEncoder ctx { typeName = name, implementation = impl, generics = generics, mappedGenerics = generics }
 
 
 record : Name -> GenericsAnnotation -> RecordDefinition -> Ctx -> Ctx
@@ -217,7 +236,7 @@ record name generics def ctx =
                     [ ( "rows", indentWith 8 <| String.join "\n," rows )
                     ]
     in
-    addEncoder ctx { typeName = name, implementation = impl, generics = generics }
+    addEncoder ctx { typeName = name, implementation = impl, generics = generics, mappedGenerics = generics }
 
 
 typeAnnotation : Depth -> TypeAnnotation -> String
@@ -308,8 +327,17 @@ typeDef depth td =
                 "Int" ->
                     "Encode.int"
 
+                "Float" ->
+                    "Encode.float"
+
+                "Bool" ->
+                    "Encode.bool"
+
+                "Set" ->
+                    "(\\encoder data ->  Encode.list encoder <| Set.toList data)"
+
                 n ->
                     "{{name}}Encoder" |> interpolate "name" (decapitalize n)
 
         ListDef arg ->
-            "Encode.list {{encoder}}" |> interpolate "encoder" (typeAnnotation depth arg)
+            "Encode.list <| {{encoder}}" |> interpolate "encoder" (typeAnnotation depth arg)

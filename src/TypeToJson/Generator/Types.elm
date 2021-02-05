@@ -22,4 +22,5 @@ type alias Coder =
     { typeName : String
     , implementation : String
     , generics : GenericsAnnotation
+    , mappedGenerics : GenericsAnnotation
     }

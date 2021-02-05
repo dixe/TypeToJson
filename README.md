@@ -9,3 +9,14 @@ Test can be generated semi automatic the node module `TestGenerator.js` loop ove
 In UnitTest.elm these tests for different generated modules (modules in `tests/GeneratedTests` can be made. Most of them are on test that check that `input == decode encode input`
 
 The types of test are Basic records, Custom types, AnonymousRecord ect.
+
+
+# TODO
+Implement support for
+
+* Array
+* Char
+* Dict
+* Maybe
+* Result
+* Set
