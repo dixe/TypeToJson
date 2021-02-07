@@ -186,6 +186,16 @@ getAlias ta =
 
 typeAnnotation : Tan.TypeAnnotation -> ParseResult TypeAnnotation
 typeAnnotation anno =
+    let
+        withOneArg : String -> (TypeAnnotation -> TypeDef) -> List TypeAnnotation -> ParseResult TypeAnnotation
+        withOneArg typeName toTypeDef args =
+            case args of
+                a :: [] ->
+                    Ok <| Typed <| toTypeDef a
+
+                _ ->
+                    Err <| List.map Other [ typeName ++ " with " ++ (String.fromInt <| List.length args) ++ " arguments" ]
+    in
     case anno of
         Tan.Record r ->
             map Record (getFields r)
@@ -195,6 +205,7 @@ typeAnnotation anno =
                 ( _, name ) =
                     Node.value mod
 
+                parsedArgs : ParseResult (List TypeAnnotation)
                 parsedArgs =
                     flattenParseResults <| List.map (\x -> x |> Node.value |> typeAnnotation) arguments
             in
@@ -203,12 +214,10 @@ typeAnnotation anno =
                     case name of
                         -- handle builtins like lists
                         "List" ->
-                            case args of
-                                a :: [] ->
-                                    Ok <| Typed <| ListDef a
+                            withOneArg "List" ListDef args
 
-                                _ ->
-                                    Err <| List.map Other [ "List with " ++ (String.fromInt <| List.length args) ++ " arguments" ]
+                        "Maybe" ->
+                            withOneArg "List" MaybeDef args
 
                         n ->
                             Ok <| Typed <| Type n

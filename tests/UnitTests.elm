@@ -6,6 +6,7 @@ import GeneratedTests.AnonymousRecord
 import GeneratedTests.AnonymousTuples
 import GeneratedTests.CustomType
 import GeneratedTests.Generics
+import GeneratedTests.Maybes
 import GeneratedTests.NestedRecord
 import GeneratedTests.NestedTuples
 import GeneratedTests.Record
@@ -54,6 +55,12 @@ suite =
         , test "CustomTypes C2" <|
             \_ ->
                 Expect.ok <| testCustomType <| GeneratedTests.CustomType.C2 "stringData"
+        , test "Maybes_Just" <|
+            \_ ->
+                Expect.ok <| testMaybes <| Just "lol"
+        , test "Maybes_Nothgin" <|
+            \_ ->
+                Expect.ok <| testMaybes <| Nothing
         , test "AnonymousTuples" <|
             \_ ->
                 let
@@ -143,6 +150,14 @@ suite =
                 in
                 Expect.ok decoded
         ]
+
+
+testMaybes data =
+    let
+        encoded =
+            Encode.encode 0 <| GeneratedTests.Maybes.testTypeEncoder data
+    in
+    Decode.decodeString GeneratedTests.Maybes.testTypeDecoder encoded
 
 
 testCustomType data =

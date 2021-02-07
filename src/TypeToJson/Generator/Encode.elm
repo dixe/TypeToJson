@@ -13,6 +13,7 @@ type alias Depth =
 
 imports =
     [ "Json.Encode as Encode"
+    , "Json.Encode.Extra"
     ]
 
 
@@ -338,6 +339,9 @@ typeDef depth td =
 
                 n ->
                     "{{name}}Encoder" |> interpolate "name" (decapitalize n)
+
+        MaybeDef ta ->
+            "Json.Encode.Extra.maybe " ++ typeAnnotation depth ta
 
         ListDef arg ->
             "Encode.list <| {{encoder}}" |> interpolate "encoder" (typeAnnotation depth arg)

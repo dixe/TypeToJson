@@ -29,6 +29,7 @@ type TypeAnnotation
 type TypeDef
     = Type Name
     | ListDef TypeAnnotation
+    | MaybeDef TypeAnnotation
 
 
 type alias RecordDefinition =

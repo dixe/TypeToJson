@@ -32,7 +32,7 @@ type alias Model =
 
 test =
     """
-type alias SSet a = Set a
+type alias SSet  = Maybe String
 
 """
 

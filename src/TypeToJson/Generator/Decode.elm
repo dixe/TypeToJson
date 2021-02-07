@@ -393,8 +393,14 @@ typeDef td =
                 "Set" ->
                     "Json.Decode.Extra.set"
 
+                "Maybe" ->
+                    "Decode.maybe"
+
                 n ->
                     "(Decode.lazy (\\_ -> {{name}}Decoder))" |> interpolate "name" (decapitalize n)
 
-        ListDef arg ->
-            "(Decode.list {{decoder}})" |> interpolate "decoder" (typeAnnotation arg)
+        MaybeDef ta ->
+            "(Decode.maybe {{decoder}})" |> interpolate "decoder" (typeAnnotation ta)
+
+        ListDef ta ->
+            "(Decode.list {{decoder}})" |> interpolate "decoder" (typeAnnotation ta)
