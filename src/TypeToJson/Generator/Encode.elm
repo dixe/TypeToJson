@@ -334,6 +334,9 @@ typeDef depth td =
                 "Bool" ->
                     "Encode.bool"
 
+                "Dict" ->
+                    "Encode.dict"
+
                 "Set" ->
                     "(\\encoder data ->  Encode.list encoder <| Set.toList data)"
 
@@ -345,3 +348,29 @@ typeDef depth td =
 
         ListDef arg ->
             "Encode.list <| {{encoder}}" |> interpolate "encoder" (typeAnnotation depth arg)
+
+        DictDef k v ->
+            "Encode.dict {{keyEncoder}} {{valEncoder}}"
+                |> interpolateAll
+                    [ ( "keyEncoder", toStringFun k )
+                    , ( "valEncoder", typeAnnotation depth v )
+                    ]
+
+
+toStringFun : TypeAnnotation -> String
+toStringFun td =
+    let
+        typ =
+            case td of
+                Typed ta ->
+                    case ta of
+                        Type t ->
+                            t
+
+                        _ ->
+                            "UnsupportedToString"
+
+                _ ->
+                    "UnsupportedToString"
+    in
+    "String.from" ++ typ

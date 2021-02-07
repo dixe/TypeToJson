@@ -14,7 +14,7 @@ imports =
     [ "Json.Decode as Decode"
     , "Json.Decode.Pipeline exposing (required)"
     , "Set exposing(Set)"
-    , "Dict"
+    , "Dict exposing(Dict)"
     , "Json.Decode.Extra"
     ]
 
@@ -387,9 +387,6 @@ typeDef td =
                 "Float" ->
                     "Decode.float"
 
-                "Dict" ->
-                    "Json.Decode.Extra.dict2"
-
                 "Set" ->
                     "Json.Decode.Extra.set"
 
@@ -404,3 +401,10 @@ typeDef td =
 
         ListDef ta ->
             "(Decode.list {{decoder}})" |> interpolate "decoder" (typeAnnotation ta)
+
+        DictDef k v ->
+            "Json.Decode.Extra.dict2 {{keyDecoder}} {{valDecoder}}"
+                |> interpolateAll
+                    [ ( "keyDecoder", typeAnnotation k )
+                    , ( "valDecoder", typeAnnotation v )
+                    ]

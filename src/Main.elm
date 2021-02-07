@@ -32,7 +32,7 @@ type alias Model =
 
 test =
     """
-type alias SSet  = Maybe String
+type alias TAlias = Dict Int String
 
 """
 

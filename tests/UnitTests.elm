@@ -1,10 +1,12 @@
 module UnitTests exposing (..)
 
+import Dict
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import GeneratedTests.AnonymousRecord
 import GeneratedTests.AnonymousTuples
 import GeneratedTests.CustomType
+import GeneratedTests.Dicts
 import GeneratedTests.Generics
 import GeneratedTests.Maybes
 import GeneratedTests.NestedRecord
@@ -61,6 +63,9 @@ suite =
         , test "Maybes_Nothgin" <|
             \_ ->
                 Expect.ok <| testMaybes <| Nothing
+        , test "Dict_Just" <|
+            \_ ->
+                Expect.ok <| testDicts
         , test "AnonymousTuples" <|
             \_ ->
                 let
@@ -150,6 +155,17 @@ suite =
                 in
                 Expect.ok decoded
         ]
+
+
+testDicts =
+    let
+        data =
+            Dict.fromList [ ( 2, "testData" ), ( 3, "Test2:" ) ]
+
+        encoded =
+            Encode.encode 0 <| GeneratedTests.Dicts.testTypeEncoder data
+    in
+    Decode.decodeString GeneratedTests.Dicts.testTypeDecoder encoded
 
 
 testMaybes data =

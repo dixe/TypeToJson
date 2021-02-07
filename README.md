@@ -16,7 +16,7 @@ Implement support for
 
 - [ ] Array
 - [ ] Char
-- [ ] Dict
+- [x] Dict
 - [x] Maybe
 - [ ] Result
 - [x] Set

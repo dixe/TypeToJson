@@ -219,6 +219,14 @@ typeAnnotation anno =
                         "Maybe" ->
                             withOneArg "List" MaybeDef args
 
+                        "Dict" ->
+                            case args of
+                                a :: b :: [] ->
+                                    Ok <| Typed <| DictDef a b
+
+                                _ ->
+                                    Err <| List.map Other [ "Dict  with " ++ (String.fromInt <| List.length args) ++ " arguments" ]
+
                         n ->
                             Ok <| Typed <| Type n
                 )
