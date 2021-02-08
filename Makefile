@@ -11,7 +11,6 @@ test-worker:
 	elm make src/Worker.elm --optimize --output elm.min.js
 
 build-and-run-test-worker:
-
 	make build-test-worker
 	make run-test-worker
 

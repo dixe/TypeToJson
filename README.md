@@ -20,3 +20,6 @@ Implement support for
 - [x] Maybe
 - [x] Result
 - [x] Set
+
+
+Better formatting of output
