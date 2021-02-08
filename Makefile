@@ -1,10 +1,10 @@
 run-website:
 	elm-live src/Main.elm
 
-build-website:
+website:
 	elm make src/Main.elm --optimize
 
-build-test-worker:
+test-worker:
 	elm make src/Worker.elm --optimize --output elm.min.js
 
 build-and-run-test-worker:
