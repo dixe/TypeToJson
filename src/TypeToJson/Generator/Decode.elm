@@ -410,11 +410,11 @@ typeDef td =
                     ]
 
         ResultDef err ok ->
-            """Decode.oneOf [ Decode.succeed Ok
+            """(Decode.oneOf [ Decode.succeed Ok
     |> required "Ok" {{okDecoder}}
 , Decode.succeed Err
     |> required "Err" {{errDecoder}}
-]
+])
 """
                 |> interpolateAll
                     [ ( "okDecoder", typeAnnotation ok )

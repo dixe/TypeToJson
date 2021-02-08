@@ -4,6 +4,9 @@ run-website:
 website:
 	elm make src/Main.elm --optimize
 
+deploy-website:
+	cp index.html docs/index.html
+
 test-worker:
 	elm make src/Worker.elm --optimize --output elm.min.js
 

@@ -1,8 +1,11 @@
 module OnTheFlyTest exposing (try)
 
+import Dict exposing (Dict)
 import Json.Decode as Decode
+import Json.Decode.Extra
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
+import Json.Encode.Extra
 import Set exposing (Set)
 
 
@@ -55,10 +58,45 @@ testString =
 -- ENCODERS
 
 
-type alias SSet a =
-    Set a
+type alias Example =
+    { result : Result Int String
+    , data : Maybe String
+    }
 
 
-sSetEncoder : (a -> Encode.Value) -> SSet a -> Encode.Value
-sSetEncoder aEncoder sSet =
-    Encode.list aEncoder <| Set.toList sSet
+exampleEncoder : Example -> Encode.Value
+exampleEncoder example =
+    Encode.object
+        [ ( "result"
+          , (\data ->
+                Encode.object
+                    (case data of
+                        Ok ok ->
+                            [ ( "Ok", Encode.string ok ) ]
+
+                        Err err ->
+                            [ ( "Err", Encode.int err ) ]
+                    )
+            )
+                example.result
+          )
+        , ( "data", Json.Encode.Extra.maybe Encode.string example.data )
+        ]
+
+
+
+-- DECODERS
+
+
+exampleDecoder : Decode.Decoder Example
+exampleDecoder =
+    Decode.succeed Example
+        |> required "result"
+            (Decode.oneOf
+                [ Decode.succeed Ok
+                    |> required "Ok" Decode.string
+                , Decode.succeed Err
+                    |> required "Err" Decode.int
+                ]
+            )
+        |> required "data" (Decode.maybe Decode.string)

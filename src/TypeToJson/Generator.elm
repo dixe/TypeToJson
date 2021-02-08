@@ -15,11 +15,11 @@ generate types =
     in
     """{{imports}}
 
---ENCODERS
+-- ENCODERS
 
 {{encoders}}
 
---DECODERS
+-- DECODERS
 {{decoders}}
 """
         |> interpolateAll
