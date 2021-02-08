@@ -32,7 +32,7 @@ type alias Model =
 
 test =
     """
-type alias TAlias = Dict Int String
+type alias TAlias = Result Int String
 
 """
 

@@ -12,6 +12,7 @@ import GeneratedTests.Maybes
 import GeneratedTests.NestedRecord
 import GeneratedTests.NestedTuples
 import GeneratedTests.Record
+import GeneratedTests.Results
 import GeneratedTests.Sets
 import GeneratedTests.Tuples
 import Json.Decode as Decode
@@ -63,9 +64,15 @@ suite =
         , test "Maybes_Nothgin" <|
             \_ ->
                 Expect.ok <| testMaybes <| Nothing
-        , test "Dict_Just" <|
+        , test "Dict" <|
             \_ ->
                 Expect.ok <| testDicts
+        , test "Result_Err" <|
+            \_ ->
+                Expect.ok <| testResultsErr
+        , test "Result_ok" <|
+            \_ ->
+                Expect.ok <| testResultsOk
         , test "AnonymousTuples" <|
             \_ ->
                 let
@@ -166,6 +173,28 @@ testDicts =
             Encode.encode 0 <| GeneratedTests.Dicts.testTypeEncoder data
     in
     Decode.decodeString GeneratedTests.Dicts.testTypeDecoder encoded
+
+
+testResultsOk =
+    let
+        data =
+            Ok "Data"
+
+        encoded =
+            Encode.encode 0 <| GeneratedTests.Results.testTypeEncoder data
+    in
+    Decode.decodeString GeneratedTests.Results.testTypeDecoder encoded
+
+
+testResultsErr =
+    let
+        data =
+            Err 2
+
+        encoded =
+            Encode.encode 0 <| GeneratedTests.Results.testTypeEncoder data
+    in
+    Decode.decodeString GeneratedTests.Results.testTypeDecoder encoded
 
 
 testMaybes data =

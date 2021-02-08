@@ -225,7 +225,15 @@ typeAnnotation anno =
                                     Ok <| Typed <| DictDef a b
 
                                 _ ->
-                                    Err <| List.map Other [ "Dict  with " ++ (String.fromInt <| List.length args) ++ " arguments" ]
+                                    Err <| List.map Other [ "Dict with " ++ (String.fromInt <| List.length args) ++ " arguments" ]
+
+                        "Result" ->
+                            case args of
+                                a :: b :: [] ->
+                                    Ok <| Typed <| ResultDef a b
+
+                                _ ->
+                                    Err <| List.map Other [ "Result with " ++ (String.fromInt <| List.length args) ++ " arguments" ]
 
                         n ->
                             Ok <| Typed <| Type n

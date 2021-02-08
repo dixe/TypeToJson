@@ -31,6 +31,7 @@ type TypeDef
     | ListDef TypeAnnotation
     | MaybeDef TypeAnnotation
     | DictDef TypeAnnotation TypeAnnotation
+    | ResultDef TypeAnnotation TypeAnnotation
 
 
 type alias RecordDefinition =

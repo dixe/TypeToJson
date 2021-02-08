@@ -1,4 +1,4 @@
-# JsonGenerators
+# TypeToJson
 Elm Json Encoder and Decoder generation from types
 
 
@@ -18,5 +18,5 @@ Implement support for
 - [ ] Char
 - [x] Dict
 - [x] Maybe
-- [ ] Result
+- [x] Result
 - [x] Set

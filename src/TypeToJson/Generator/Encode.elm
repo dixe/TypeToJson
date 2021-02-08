@@ -356,6 +356,19 @@ typeDef depth td =
                     , ( "valEncoder", typeAnnotation depth v )
                     ]
 
+        ResultDef err ok ->
+            """(\\data -> Encode.object
+  (case data of
+    Ok ok ->
+             [("Ok", {{okEncoder}} ok)]
+    Err err ->
+             [("Err", {{errEncoder}} err)]))
+"""
+                |> interpolateAll
+                    [ ( "okEncoder", typeAnnotation depth ok )
+                    , ( "errEncoder", typeAnnotation depth err )
+                    ]
+
 
 toStringFun : TypeAnnotation -> String
 toStringFun td =
