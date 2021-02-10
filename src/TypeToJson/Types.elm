@@ -27,7 +27,7 @@ type TypeAnnotation
 
 
 type TypeDef
-    = Type Name
+    = Type Name (List TypeAnnotation)
     | ListDef TypeAnnotation
     | MaybeDef TypeAnnotation
     | DictDef TypeAnnotation TypeAnnotation

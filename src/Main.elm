@@ -37,8 +37,13 @@ type alias Model =
 
 
 example =
-    """type alias Example =
-    { result : Result Int String
+    """type Error a = BadError
+ |  GoodError String
+ | OkError String
+ | MyError a
+
+type alias Example =
+    { result : Result (Error Int) String
     , data : Maybe String
     }"""
 
@@ -50,7 +55,7 @@ moduleHeader =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( parse { input = "", output = "" }, Cmd.none )
+    ( parse { input = example, output = "" }, Cmd.none )
 
 
 parse : Model -> Model
@@ -128,10 +133,10 @@ infoPannel model =
         [ el [ Font.size 30, centerX ] (text "Elm type to Json Encoder and Decoders")
         , column [ spacing 10, paddingXY 40 20 ]
             [ paragraph [ Font.size 20 ]
-                [ text "Type or copy your elm types into the input field on the right."
+                [ text "Type or copy your elm types into the input field."
                 ]
             , paragraph [ Font.size 20 ]
-                [ text " As you type the output field on the left will update and show the Encoders and Decoders along with the imports being used."
+                [ text " As you type the output field will update and show the Encoders and Decoders along with the imports being used."
                 ]
             ]
         ]
@@ -140,7 +145,7 @@ infoPannel model =
 inputPannels : Model -> Element Msg
 inputPannels model =
     column [ centerX, width fill ]
-        [ row [ spacing 20, paddingXY 10 20, centerX, width fill ]
+        [ column [ spacing 40, paddingXY 10 20, centerX, width fill ]
             [ multiline [ alignTop, height (fill |> minimum 400) ]
                 { onChange = WriteCode
                 , text = model.input
@@ -148,7 +153,7 @@ inputPannels model =
                 , placeholder = Just <| placeholder [] (text "Put your elm types here to get Encoders and Decoders")
                 , spellcheck = False
                 }
-            , multiline [ width <| fillPortion 1, height (fill |> minimum 400) ]
+            , multiline [ width <| fillPortion 1, height fill ]
                 { onChange = WriteOutput
                 , text = model.output
                 , label = labelAbove [ Font.bold ] (text "Encoder and Decoders")

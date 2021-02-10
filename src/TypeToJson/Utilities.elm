@@ -39,7 +39,7 @@ indentWith space s =
 mapGenerics : TypeDef -> GenericsAnnotation -> GenericsAnnotation
 mapGenerics td generics =
     case td of
-        Type t ->
+        Type t args ->
             case t of
                 "Set" ->
                     [ "comparable" ]

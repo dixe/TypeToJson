@@ -81,7 +81,12 @@ customType name generics consts ctx =
         gen =
             constructors name consts
     in
-    addEncoder ctx { typeName = name, implementation = gen, generics = generics, mappedGenerics = generics }
+    addEncoder ctx
+        { typeName = name
+        , implementation = gen
+        , generics = generics
+        , mappedGenerics = generics
+        }
 
 
 constructors : Name -> List Constructor -> String
@@ -320,7 +325,7 @@ Encode.object [
 typeDef : Depth -> TypeDef -> String
 typeDef depth td =
     case td of
-        Type t ->
+        Type t args ->
             case t of
                 "String" ->
                     "Encode.string"
@@ -341,7 +346,11 @@ typeDef depth td =
                     "(\\encoder data ->  Encode.list encoder <| Set.toList data)"
 
                 n ->
-                    "{{name}}Encoder" |> interpolate "name" (decapitalize n)
+                    "{{name}}Encoder {{args}}"
+                        |> interpolateAll
+                            [ ( "name", decapitalize n )
+                            , ( "args", String.join "," <| List.map (typeAnnotation depth) args )
+                            ]
 
         MaybeDef ta ->
             "Json.Encode.Extra.maybe " ++ typeAnnotation depth ta
@@ -377,7 +386,7 @@ toStringFun td =
             case td of
                 Typed ta ->
                     case ta of
-                        Type t ->
+                        Type t [] ->
                             t
 
                         _ ->

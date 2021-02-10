@@ -376,7 +376,7 @@ recordField name td =
 typeDef : TypeDef -> String
 typeDef td =
     case td of
-        Type t ->
+        Type t args ->
             case t of
                 "String" ->
                     "Decode.string"
@@ -394,7 +394,11 @@ typeDef td =
                     "Decode.maybe"
 
                 n ->
-                    "(Decode.lazy (\\_ -> {{name}}Decoder))" |> interpolate "name" (decapitalize n)
+                    "(Decode.lazy (\\_ -> {{name}}Decoder {{args}}))"
+                        |> interpolateAll
+                            [ ( "name", decapitalize n )
+                            , ( "args", String.join "," <| List.map typeAnnotation args )
+                            ]
 
         MaybeDef ta ->
             "(Decode.maybe {{decoder}})" |> interpolate "decoder" (typeAnnotation ta)

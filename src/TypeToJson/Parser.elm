@@ -236,7 +236,7 @@ typeAnnotation anno =
                                     Err <| List.map Other [ "Result with " ++ (String.fromInt <| List.length args) ++ " arguments" ]
 
                         n ->
-                            Ok <| Typed <| Type n
+                            Ok <| Typed <| Type n args
                 )
                 parsedArgs
 
@@ -248,7 +248,7 @@ typeAnnotation anno =
             map Tuple parsedArgs
 
         Tan.GenericType t ->
-            Ok <| Typed <| Type t
+            Ok <| Typed <| Type t []
 
         Tan.Unit ->
             Err <| [ NotSupported "Unit" ]
