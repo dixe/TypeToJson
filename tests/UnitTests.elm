@@ -5,6 +5,7 @@ import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import GeneratedTests.AnonymousRecord
 import GeneratedTests.AnonymousTuples
+import GeneratedTests.Combined1
 import GeneratedTests.CustomType
 import GeneratedTests.Dicts
 import GeneratedTests.Generics
@@ -27,52 +28,64 @@ suite =
         [ test "Simple Record" <|
             \_ ->
                 let
-                    record : GeneratedTests.Record.TestType
-                    record =
+                    data : GeneratedTests.Record.TestType
+                    data =
                         { stringField = "StringData", intField = 3 }
 
                     encoded =
-                        Encode.encode 0 <| GeneratedTests.Record.testTypeEncoder record
+                        Encode.encode 0 <| GeneratedTests.Record.testTypeEncoder data
 
                     decoded =
                         Decode.decodeString GeneratedTests.Record.testTypeDecoder encoded
                 in
-                Expect.ok decoded
+                match data decoded
         , test "Anonymous Record" <|
             \_ ->
                 let
-                    record : GeneratedTests.AnonymousRecord.TestType
-                    record =
+                    data : GeneratedTests.AnonymousRecord.TestType
+                    data =
                         GeneratedTests.AnonymousRecord.C1 { stringField = "StringData", intField = 3 } { field2 = "data2" }
 
                     encoded =
-                        Encode.encode 0 <| GeneratedTests.AnonymousRecord.testTypeEncoder record
+                        Encode.encode 0 <| GeneratedTests.AnonymousRecord.testTypeEncoder data
 
                     decoded =
                         Decode.decodeString GeneratedTests.AnonymousRecord.testTypeDecoder encoded
                 in
-                Expect.ok decoded
+                match data decoded
         , test "CustomTypes C1" <|
             \_ ->
-                Expect.ok <| testCustomType <| GeneratedTests.CustomType.C1
+                testCustomType <| GeneratedTests.CustomType.C1
         , test "CustomTypes C2" <|
             \_ ->
-                Expect.ok <| testCustomType <| GeneratedTests.CustomType.C2 "stringData"
+                testCustomType <| GeneratedTests.CustomType.C2 "stringData"
         , test "Maybes_Just" <|
             \_ ->
-                Expect.ok <| testMaybes <| Just "lol"
+                testMaybes <| Just "lol"
         , test "Maybes_Nothgin" <|
             \_ ->
-                Expect.ok <| testMaybes <| Nothing
+                testMaybes <| Nothing
         , test "Dict" <|
             \_ ->
-                Expect.ok <| testDicts
+                testDicts
         , test "Result_Err" <|
             \_ ->
-                Expect.ok <| testResultsErr
+                testResultsErr
         , test "Result_ok" <|
             \_ ->
-                Expect.ok <| testResultsOk
+                testResultsOk
+        , test "Combined1_1" <|
+            \_ ->
+                testCombined1_1
+        , test "Combined1_2" <|
+            \_ ->
+                testCombined1_2
+        , test "Combined1_3" <|
+            \_ ->
+                testCombined1_3
+        , test "Combined1_4" <|
+            \_ ->
+                testCombined1_4
         , test "AnonymousTuples" <|
             \_ ->
                 let
@@ -85,7 +98,7 @@ suite =
                     decoded =
                         Decode.decodeString GeneratedTests.AnonymousTuples.testTypeDecoder encoded
                 in
-                Expect.ok decoded
+                match data decoded
         , test "Tuples" <|
             \_ ->
                 let
@@ -99,7 +112,7 @@ suite =
                     decoded =
                         Decode.decodeString GeneratedTests.Tuples.testTypeDecoder encoded
                 in
-                Expect.ok decoded
+                match data decoded
         , test "NestedTuples" <|
             \_ ->
                 let
@@ -113,7 +126,7 @@ suite =
                     decoded =
                         Decode.decodeString GeneratedTests.NestedTuples.testTypeDecoder encoded
                 in
-                Expect.ok decoded
+                match data decoded
         , test "NestedRecord" <|
             \_ ->
                 let
@@ -132,7 +145,7 @@ suite =
                     decoded =
                         Decode.decodeString GeneratedTests.NestedRecord.testTypeDecoder encoded
                 in
-                Expect.ok decoded
+                match data decoded
         , test "Generics" <|
             \_ ->
                 let
@@ -146,7 +159,7 @@ suite =
                     decoded =
                         Decode.decodeString (GeneratedTests.Generics.testTypeDecoder Decode.int Decode.string) encoded
                 in
-                Expect.ok decoded
+                match data decoded
         , test "Sets" <|
             \_ ->
                 let
@@ -160,8 +173,58 @@ suite =
                     decoded =
                         Decode.decodeString (GeneratedTests.Sets.testTypeDecoder Decode.string) encoded
                 in
-                Expect.ok decoded
+                match data decoded
         ]
+
+
+testCombined1_1 =
+    let
+        data =
+            { data = Nothing, result = Err GeneratedTests.Combined1.BadError }
+
+        encoded =
+            Encode.encode 0 <| GeneratedTests.Combined1.testTypeEncoder data
+    in
+    match data <| Decode.decodeString GeneratedTests.Combined1.testTypeDecoder encoded
+
+
+testCombined1_2 =
+    let
+        data =
+            { data = Nothing, result = Err <| GeneratedTests.Combined1.GoodError "Good" }
+
+        encoded =
+            Encode.encode 0 <| GeneratedTests.Combined1.testTypeEncoder data
+    in
+    match data <| Decode.decodeString GeneratedTests.Combined1.testTypeDecoder encoded
+
+
+testCombined1_3 =
+    let
+        data =
+            { data = Nothing, result = Err <| GeneratedTests.Combined1.OkError "Ok" }
+
+        encoded =
+            Encode.encode 0 <| GeneratedTests.Combined1.testTypeEncoder data
+
+        decoded =
+            Decode.decodeString GeneratedTests.Combined1.testTypeDecoder encoded
+    in
+    match data decoded
+
+
+testCombined1_4 =
+    let
+        data =
+            { data = Nothing, result = Err GeneratedTests.Combined1.MehError }
+
+        encoded =
+            Encode.encode 0 <| GeneratedTests.Combined1.testTypeEncoder data
+
+        decoded =
+            Decode.decodeString GeneratedTests.Combined1.testTypeDecoder encoded
+    in
+    match data decoded
 
 
 testDicts =
@@ -172,7 +235,7 @@ testDicts =
         encoded =
             Encode.encode 0 <| GeneratedTests.Dicts.testTypeEncoder data
     in
-    Decode.decodeString GeneratedTests.Dicts.testTypeDecoder encoded
+    match data <| Decode.decodeString GeneratedTests.Dicts.testTypeDecoder encoded
 
 
 testResultsOk =
@@ -183,7 +246,7 @@ testResultsOk =
         encoded =
             Encode.encode 0 <| GeneratedTests.Results.testTypeEncoder data
     in
-    Decode.decodeString GeneratedTests.Results.testTypeDecoder encoded
+    match data <| Decode.decodeString GeneratedTests.Results.testTypeDecoder encoded
 
 
 testResultsErr =
@@ -194,20 +257,40 @@ testResultsErr =
         encoded =
             Encode.encode 0 <| GeneratedTests.Results.testTypeEncoder data
     in
-    Decode.decodeString GeneratedTests.Results.testTypeDecoder encoded
+    match data <| Decode.decodeString GeneratedTests.Results.testTypeDecoder encoded
 
 
 testMaybes data =
     let
         encoded =
             Encode.encode 0 <| GeneratedTests.Maybes.testTypeEncoder data
+
+        decoded =
+            Decode.decodeString GeneratedTests.Maybes.testTypeDecoder encoded
     in
-    Decode.decodeString GeneratedTests.Maybes.testTypeDecoder encoded
+    match data decoded
 
 
 testCustomType data =
     let
         encoded =
             Encode.encode 0 <| GeneratedTests.CustomType.testTypeEncoder data
+
+        decoded =
+            Decode.decodeString GeneratedTests.CustomType.testTypeDecoder encoded
     in
-    Decode.decodeString GeneratedTests.CustomType.testTypeDecoder encoded
+    match data decoded
+
+
+match : a -> Result b a -> Expectation
+match data res =
+    let
+        eq =
+            case res of
+                Ok a ->
+                    data == a
+
+                Err _ ->
+                    False
+    in
+    Expect.true "Is right and equal" <| eq
