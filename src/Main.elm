@@ -9,6 +9,7 @@ import Element.Input exposing (button, labelAbove, labelHidden, multiline, place
 import FontAwesome.Attributes as FAA
 import FontAwesome.Brands exposing (github)
 import FontAwesome.Icon as Icon
+import FontAwesome.Solid as Icon
 import FontAwesome.Styles as Icon
 import Html exposing (Html)
 import OnTheFlyTest
@@ -32,8 +33,13 @@ main =
 -- MODEL
 
 
+type ViewOption
+    = Row
+    | Column
+
+
 type alias Model =
-    { input : String, output : String }
+    { input : String, output : String, viewOption : ViewOption }
 
 
 example =
@@ -55,7 +61,7 @@ moduleHeader =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( parse { input = example, output = "" }, Cmd.none )
+    ( parse { input = example, output = "", viewOption = Column }, Cmd.none )
 
 
 parse : Model -> Model
@@ -77,6 +83,7 @@ type Msg
     | WriteCode String
     | WriteOutput String
     | Example
+    | ChangeView ViewOption
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -93,6 +100,9 @@ update msg model =
 
         Example ->
             ( parse { model | input = example }, Cmd.none )
+
+        ChangeView viewOption ->
+            ( { model | viewOption = viewOption }, Cmd.none )
 
 
 
@@ -144,28 +154,40 @@ infoPannel model =
 
 inputPannels : Model -> Element Msg
 inputPannels model =
-    column [ centerX, width fill ]
-        [ column [ spacing 40, paddingXY 10 20, centerX, width fill ]
-            [ multiline [ alignTop, height (fill |> minimum 400) ]
-                { onChange = WriteCode
-                , text = model.input
-                , label = labelAbove [ Font.bold ] (text "Input elm types")
-                , placeholder = Just <| placeholder [] (text "Put your elm types here to get Encoders and Decoders")
-                , spellcheck = False
-                }
-            , multiline [ width <| fillPortion 1, height fill ]
-                { onChange = WriteOutput
-                , text = model.output
-                , label = labelAbove [ Font.bold ] (text "Encoder and Decoders")
-                , placeholder = Nothing
-                , spellcheck = False
-                }
-            ]
-        , if model.input == "" then
-            button exampleButton { label = text "Give me an example", onPress = Just Example }
+    let
+        viewMode =
+            case model.viewOption of
+                Row ->
+                    column
 
-          else
-            Element.none
+                Column ->
+                    row
+    in
+    row [ width fill ]
+        [ el [ alignLeft, alignTop, paddingXY 0 45 ] (changeViewButton model)
+        , column [ centerX, width fill ]
+            [ viewMode [ spacing 40, paddingXY 10 20, centerX, width fill ]
+                [ multiline [ alignTop, height (fill |> minimum 400) ]
+                    { onChange = WriteCode
+                    , text = model.input
+                    , label = labelAbove [ Font.bold ] (text "Input elm types")
+                    , placeholder = Just <| placeholder [] (text "Put your elm types here to get Encoders and Decoders")
+                    , spellcheck = False
+                    }
+                , multiline [ width <| fillPortion 1, height fill ]
+                    { onChange = WriteOutput
+                    , text = model.output
+                    , label = labelAbove [ Font.bold ] (text "Encoder and Decoders")
+                    , placeholder = Nothing
+                    , spellcheck = False
+                    }
+                ]
+            , if model.input == "" then
+                button exampleButton { label = text "Give me an example", onPress = Just Example }
+
+              else
+                Element.none
+            ]
         ]
 
 
@@ -203,6 +225,20 @@ aboutPannel =
                     ]
             }
         ]
+
+
+changeViewButton : Model -> Element Msg
+changeViewButton model =
+    let
+        ( icon, changeTo ) =
+            case model.viewOption of
+                Row ->
+                    ( Icon.columns, Column )
+
+                Column ->
+                    ( Icon.bars, Row )
+    in
+    button [] { label = html <| Icon.viewIcon icon, onPress = Just <| ChangeView changeTo }
 
 
 
