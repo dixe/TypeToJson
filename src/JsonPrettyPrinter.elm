@@ -6,14 +6,7 @@ import JsonParser exposing (..)
 
 prettyPrint : Json -> String
 prettyPrint json =
-    let
-        v =
-            value 0 json
-
-        d =
-            Debug.log "PrettyPrint" json
-    in
-    v
+    value 0 json
 
 
 type alias Indent =
@@ -49,12 +42,32 @@ value indent val =
         VNull ->
             "null"
 
+        VMaybe v ->
+            """anyOf [ null,
+{{val}}
+       ]"""
+                |> interpolate "val" (value indent v)
+
+        VCustom name vals ->
+            """anyOf [{{options}}
+  ]"""
+                |> interpolate "options" (String.join ",\n " <| List.map (value indent) vals)
+
+
+
+--            String.join " | " <| List.map (value indent) valsa
+{- VAnyOf vals ->
+             """anyOf [{{options}}
+   ]"""
+                 |> interpolate "options" (String.join ",\n " <| List.map (value indent) vals)
+-}
+
 
 array : Indent -> List Value -> String
 array indent vals =
     let
         mems =
-            String.join ",\n  " <| List.map (\v -> value indent v) vals
+            String.join ",\n  " <| List.map (value indent) vals
     in
     "[ {{mems}} ] " |> interpolate "mems" mems
 
@@ -63,7 +76,7 @@ object : Indent -> List Member -> String
 object indent members =
     let
         mems =
-            String.join ",\n  " <| List.map (\m -> member indent m) members
+            String.join ",\n  " <| List.map (member indent) members
     in
     "{ {{mems}} } " |> interpolate "mems" mems
 

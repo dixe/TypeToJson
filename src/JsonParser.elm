@@ -25,6 +25,12 @@ type Value
     | VTrue
     | VFalse
     | VNull
+    | VMaybe Value
+    | VCustom Name (List Value)
+
+
+
+--    | VAnyOf (List Value)
 
 
 type alias Member =
@@ -47,7 +53,8 @@ json =
 value : Parser Value
 value =
     oneOf
-        [ succeed VTrue
+        [ maybe
+        , succeed VTrue
             |. keyword "true"
         , succeed VFalse
             |. keyword "false"
@@ -67,6 +74,13 @@ value =
             , float = Just <| \f -> VNumber <| NFloat f
             }
         ]
+
+
+maybe : Parser Value
+maybe =
+    succeed VMaybe
+        |. symbol "?"
+        |= lazy (\_ -> value)
 
 
 array : Parser Value
