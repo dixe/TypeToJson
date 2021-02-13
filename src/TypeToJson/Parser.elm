@@ -1,5 +1,6 @@
 module TypeToJson.Parser exposing (parse)
 
+import DeadEndsToString exposing (deadEndsToString)
 import Elm.Parser as Parser
 import Elm.Processing
 import Elm.Syntax.Declaration as Declaration
@@ -8,6 +9,7 @@ import Elm.Syntax.Node as Node
 import Elm.Syntax.Type
 import Elm.Syntax.TypeAlias as Tal
 import Elm.Syntax.TypeAnnotation as Tan
+import Json
 import Parser as BaseParser
 import TypeToJson.Types exposing (..)
 
@@ -48,64 +50,6 @@ errorToString e =
 
         Other s ->
             "Error: " ++ s
-
-
-deadEndsToString : List BaseParser.DeadEnd -> String
-deadEndsToString de =
-    case de of
-        [] ->
-            ""
-
-        d :: ds ->
-            let
-                posString =
-                    " at (col, row) : (" ++ String.fromInt d.row ++ ", " ++ String.fromInt d.col ++ ")"
-
-                errMsg =
-                    case d.problem of
-                        BaseParser.Expecting err ->
-                            "Expecting: " ++ err ++ posString
-
-                        BaseParser.ExpectingInt ->
-                            "ExpectingInt" ++ posString
-
-                        BaseParser.ExpectingHex ->
-                            "ExpectingHex" ++ posString
-
-                        BaseParser.ExpectingOctal ->
-                            "ExpectingOctal" ++ posString
-
-                        BaseParser.ExpectingBinary ->
-                            "ExpectingBinary" ++ posString
-
-                        BaseParser.ExpectingFloat ->
-                            "ExpectingFloat" ++ posString
-
-                        BaseParser.ExpectingNumber ->
-                            "ExpectingNumber" ++ posString
-
-                        BaseParser.ExpectingVariable ->
-                            "ExpectingVariable" ++ posString
-
-                        BaseParser.ExpectingSymbol err ->
-                            "ExpectedSymbol: " ++ err ++ posString
-
-                        BaseParser.ExpectingKeyword err ->
-                            "ExpectingKeyword: " ++ err ++ posString
-
-                        BaseParser.ExpectingEnd ->
-                            "ExpectingEnd" ++ posString
-
-                        BaseParser.UnexpectedChar ->
-                            "UnexpectedChar" ++ posString
-
-                        BaseParser.Problem err ->
-                            "Problem: " ++ err ++ posString
-
-                        BaseParser.BadRepeat ->
-                            "BadRepeat" ++ posString
-            in
-            errMsg ++ "\n" ++ deadEndsToString ds
 
 
 getDeclarations : Elm.Syntax.File.File -> ParseResult (List ValidType)

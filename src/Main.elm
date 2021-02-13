@@ -12,6 +12,7 @@ import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import FontAwesome.Styles as Icon
 import Html exposing (Html)
+import Json as Json
 import OnTheFlyTest
 import TypeToJson exposing (generate)
 
@@ -39,12 +40,12 @@ type ViewOption
 
 
 type alias Model =
-    { input : String, output : String, viewOption : ViewOption }
+    { input : String, output : String, inputJson : String, jsonResult : String, viewOption : ViewOption }
 
 
 example =
     """type Error a = BadError
- |  GoodError String
+ | GoodError String
  | OkError String
  | MyError a
 
@@ -61,7 +62,7 @@ moduleHeader =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( parse { input = example, output = "", viewOption = Column }, Cmd.none )
+    ( parse { input = example, output = "", inputJson = "", jsonResult = "", viewOption = Column }, Cmd.none )
 
 
 parse : Model -> Model
@@ -81,6 +82,7 @@ parse model =
 type Msg
     = Parse
     | WriteCode String
+    | WriteJson String
     | WriteOutput String
     | Example
     | ChangeView ViewOption
@@ -89,14 +91,33 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        WriteCode s ->
-            ( parse { model | input = s }, Cmd.none )
-
         Parse ->
             ( parse model, Cmd.none )
 
+        WriteCode s ->
+            ( parse { model | input = s }, Cmd.none )
+
         WriteOutput s ->
             ( { model | output = s }, Cmd.none )
+
+        WriteJson s ->
+            let
+                parsed =
+                    Json.parse s
+
+                m =
+                    case parsed of
+                        -- TODO update inputTypes and parse
+                        Ok json ->
+                            parse model
+
+                        Err errs ->
+                            { model | output = "JsonError: \n" ++ errs }
+
+                d =
+                    Debug.log "" parsed
+            in
+            ( { m | inputJson = s }, Cmd.none )
 
         Example ->
             ( parse { model | input = example }, Cmd.none )
@@ -130,7 +151,7 @@ view model =
             ]
             (column [ centerX, width <| fillPortion 1, width fill ]
                 [ infoPannel model
-                , inputPannels model
+                , dataPannels model
                 , aboutPannel
                 ]
             )
@@ -152,8 +173,8 @@ infoPannel model =
         ]
 
 
-inputPannels : Model -> Element Msg
-inputPannels model =
+dataPannels : Model -> Element Msg
+dataPannels model =
     let
         viewMode =
             case model.viewOption of
@@ -166,14 +187,8 @@ inputPannels model =
     row [ width fill ]
         [ el [ alignLeft, alignTop, paddingXY 0 45 ] (changeViewButton model)
         , column [ centerX, width fill ]
-            [ viewMode [ spacing 40, paddingXY 10 20, centerX, width fill ]
-                [ multiline [ alignTop, height (fill |> minimum 400) ]
-                    { onChange = WriteCode
-                    , text = model.input
-                    , label = labelAbove [ Font.bold ] (text "Input elm types")
-                    , placeholder = Just <| placeholder [] (text "Put your elm types here to get Encoders and Decoders")
-                    , spellcheck = False
-                    }
+            [ viewMode [ spacingXY 10 30, paddingXY 10 20, centerX, width fill ]
+                [ el [ width <| fillPortion 1, height fill ] (inputPannel model)
                 , multiline [ width <| fillPortion 1, height fill ]
                     { onChange = WriteOutput
                     , text = model.output
@@ -188,6 +203,26 @@ inputPannels model =
               else
                 Element.none
             ]
+        ]
+
+
+inputPannel : Model -> Element Msg
+inputPannel model =
+    column [ alignTop, width fill, spacingXY 0 10 ]
+        [ multiline [ alignTop, height (shrink |> minimum 200) ]
+            { onChange = WriteCode
+            , text = model.input
+            , label = labelAbove [ Font.bold ] (text "Input elm types")
+            , placeholder = Just <| placeholder [] (text "Put your elm types here to get Encoders and Decoders")
+            , spellcheck = False
+            }
+        , multiline [ alignTop, height (shrink |> minimum 200) ]
+            { onChange = WriteJson
+            , text = model.inputJson
+            , label = labelAbove [ Font.bold ] (text "Input json")
+            , placeholder = Just <| placeholder [] (text "Put your json here to get Encoders and Decoders")
+            , spellcheck = False
+            }
         ]
 
 
