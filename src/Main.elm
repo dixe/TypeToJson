@@ -55,6 +55,13 @@ type alias Example =
     }"""
 
 
+example2 =
+    """type alias Example =
+    { result : String
+    , data : Int
+    }"""
+
+
 moduleHeader : String
 moduleHeader =
     "module Test exposing(..)\n"
@@ -69,7 +76,7 @@ parseFromType : Model -> Model
 parseFromType model =
     case generate <| moduleHeader ++ model.input of
         Ok ts ->
-            { model | output = ts.output }
+            { model | output = ts.output, inputJson = ts.inputJson }
 
         Err e ->
             { model | output = e }

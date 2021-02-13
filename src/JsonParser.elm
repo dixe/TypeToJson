@@ -1,4 +1,4 @@
-module JsonParser exposing (Json, Member(..), Name, Number(..), Value(..), parse)
+module JsonParser exposing (Json, Member, Name, Number(..), Value(..), parse)
 
 import DeadEndsToString exposing (deadEndsToString)
 import Parser exposing ((|.), (|=), DeadEnd, Parser, Trailing(..), chompWhile, end, float, getChompedString, keyword, lazy, number, oneOf, run, sequence, spaces, succeed, symbol)
@@ -27,8 +27,8 @@ type Value
     | VNull
 
 
-type Member
-    = Member Name Value
+type alias Member =
+    { name : Name, value : Value }
 
 
 parse : String -> Result String Json
@@ -57,6 +57,8 @@ value =
             |. keyword "false"
         , object
         , array
+        , succeed VString
+            |= string
         , number
             { int = Just <| \i -> VNumber <| NInt i
             , hex = Nothing
@@ -97,17 +99,17 @@ member : Parser Member
 member =
     succeed Member
         |. spaces
-        |. symbol "\""
-        |= name
-        |. symbol "\""
+        |= string
         |. spaces
         |. symbol ":"
         |. spaces
         |= lazy (\_ -> value)
 
 
-name : Parser String
-name =
+string : Parser String
+string =
     getChompedString <|
         succeed ()
+            |. symbol "\""
             |. chompWhile (\c -> Char.isAlphaNum c)
+            |. symbol "\""
