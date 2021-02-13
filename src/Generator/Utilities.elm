@@ -1,6 +1,6 @@
-module TypeToJson.Utilities exposing (indent, indentWith, interpolate, interpolateAll, mapGenerics)
+module Generator.Utilities exposing (indent, indentWith, interpolate, interpolateAll, mapGenerics)
 
-import TypeToJson.Types exposing (GenericsAnnotation, TypeDef(..))
+import Types exposing (GenericsAnnotation, TypeDef(..))
 
 
 interpolateAll : List ( String, String ) -> String -> String

@@ -1,10 +1,10 @@
-module TypeToJson.Generator.Encode exposing (encoderDeclaration, generate)
+module Generator.Encode exposing (encoderDeclaration, generate)
 
+import Generator.Types exposing (..)
+import Generator.Utilities exposing (..)
 import List.Extra
 import String.Extra exposing (decapitalize)
-import TypeToJson.Generator.Types exposing (..)
-import TypeToJson.Types exposing (..)
-import TypeToJson.Utilities exposing (..)
+import Types exposing (..)
 
 
 type alias Depth =

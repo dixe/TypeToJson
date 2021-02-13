@@ -1,4 +1,4 @@
-module Json exposing (Json, Member(..), Name, Number(..), Value(..), parse)
+module JsonParser exposing (Json, Member(..), Name, Number(..), Value(..), parse)
 
 import DeadEndsToString exposing (deadEndsToString)
 import Parser exposing ((|.), (|=), DeadEnd, Parser, Trailing(..), chompWhile, end, float, getChompedString, keyword, lazy, number, oneOf, run, sequence, spaces, succeed, symbol)

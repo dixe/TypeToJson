@@ -1,4 +1,4 @@
-module TypeToJson.Parser exposing (parse)
+module ElmParser exposing (parse)
 
 import DeadEndsToString exposing (deadEndsToString)
 import Elm.Parser as Parser
@@ -9,9 +9,8 @@ import Elm.Syntax.Node as Node
 import Elm.Syntax.Type
 import Elm.Syntax.TypeAlias as Tal
 import Elm.Syntax.TypeAnnotation as Tan
-import Json
 import Parser as BaseParser
-import TypeToJson.Types exposing (..)
+import Types exposing (..)
 
 
 type Error

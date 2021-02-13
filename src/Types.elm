@@ -1,4 +1,4 @@
-module TypeToJson.Types exposing (..)
+module Types exposing (..)
 
 
 type alias Name =

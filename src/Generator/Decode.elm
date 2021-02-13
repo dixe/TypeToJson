@@ -1,13 +1,13 @@
-module TypeToJson.Generator.Decode exposing (decoderDeclaration, generate)
+module Generator.Decode exposing (decoderDeclaration, generate)
 
+import Generator.Types exposing (..)
+import Generator.Utilities exposing (..)
 import Json.Decode as Decode
 import Json.Decode.Extra
 import List.Extra
 import Set
 import String.Extra exposing (decapitalize)
-import TypeToJson.Generator.Types exposing (..)
-import TypeToJson.Types exposing (..)
-import TypeToJson.Utilities exposing (..)
+import Types exposing (..)
 
 
 imports =

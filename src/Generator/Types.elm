@@ -1,6 +1,6 @@
-module TypeToJson.Generator.Types exposing (..)
+module Generator.Types exposing (..)
 
-import TypeToJson.Types exposing (..)
+import Types exposing (..)
 
 
 type alias Ctx =

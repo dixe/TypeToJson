@@ -11,10 +11,10 @@ import FontAwesome.Brands exposing (github)
 import FontAwesome.Icon as Icon
 import FontAwesome.Solid as Icon
 import FontAwesome.Styles as Icon
+import Generators exposing (generate, generateFromJson)
 import Html exposing (Html)
-import Json as Json
+import JsonParser as Json
 import OnTheFlyTest
-import TypeToJson exposing (generate, generateFromJson)
 
 
 

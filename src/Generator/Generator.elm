@@ -1,10 +1,10 @@
-module TypeToJson.Generator exposing (generate)
+module Generator.Generator exposing (generate)
 
-import TypeToJson.Generator.Decode as DC
-import TypeToJson.Generator.Encode as EC
-import TypeToJson.Generator.Types exposing (..)
-import TypeToJson.Types exposing (..)
-import TypeToJson.Utilities exposing (..)
+import Generator.Decode as DC
+import Generator.Encode as EC
+import Generator.Types exposing (..)
+import Generator.Utilities exposing (..)
+import Types exposing (..)
 
 
 generate : List ValidType -> String

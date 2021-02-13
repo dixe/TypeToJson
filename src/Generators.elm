@@ -1,9 +1,9 @@
-module TypeToJson exposing (GeneraterResult, generate, generateFromJson)
+module Generators exposing (GeneraterResult, generate, generateFromJson)
 
-import Json exposing (Json, Member(..), Name, Number(..), Value(..))
-import TypeToJson.Generator as Generator
-import TypeToJson.Parser as TP exposing (parse)
-import TypeToJson.Types exposing (..)
+import ElmParser as EP exposing (parse)
+import Generator.Generator as Generator
+import JsonParser exposing (Json, Member(..), Name, Number(..), Value(..))
+import Types exposing (..)
 
 
 type alias GeneraterResult =
@@ -17,7 +17,7 @@ generate : String -> Result String GeneraterResult
 generate input =
     let
         r =
-            case TP.parse input of
+            case EP.parse input of
                 Ok ts ->
                     Ok <| generateFromValidType ts
 
