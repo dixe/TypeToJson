@@ -89,10 +89,10 @@ typeDef td =
                     VString "StringValue"
 
                 "Int" ->
-                    VNumber <| NInt 23
+                    VNumber <| NInt 1
 
                 n ->
-                    unimplemented <| "Type - " ++ n
+                    VString <| n ++ "Value"
 
         ListDef ta ->
             unimplemented "List"
@@ -101,8 +101,29 @@ typeDef td =
             VMaybe <| typeAnnotation ta
 
         DictDef key val ->
-            unimplemented "Dict"
+            let
+                d =
+                    Debug.log "key" key
 
+                keyName =
+                    case key of
+                        Typed t ->
+                            case t of
+                                Type name _ ->
+                                    name
+
+                                _ ->
+                                    "UnsupportedDictKeyType Record"
+
+                        Tuple _ ->
+                            "UnsupportedDictKeyType Tuple"
+
+                        Record _ ->
+                            "UnsupportedDictKeyType Record"
+            in
+            VObject [ { name = keyName, value = typeAnnotation val } ]
+
+        --            VObject [ ( typeAnnotation key, typeAnnotation val ) ]
         ResultDef err ok ->
             unimplemented "resDef"
 

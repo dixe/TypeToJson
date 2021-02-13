@@ -45,7 +45,7 @@ type alias Model =
 
 example =
     """type Error a = BadError
- | GoodError String
+ | GoodError (Dict Int String)
  | OkError String
  | MyError a
 

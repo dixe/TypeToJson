@@ -234,6 +234,9 @@ testDicts =
 
         encoded =
             Encode.encode 0 <| GeneratedTests.Dicts.testTypeEncoder data
+
+        d =
+            Debug.log "" encoded
     in
     match data <| Decode.decodeString GeneratedTests.Dicts.testTypeDecoder encoded
 
