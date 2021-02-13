@@ -14,7 +14,7 @@ import FontAwesome.Styles as Icon
 import Html exposing (Html)
 import Json as Json
 import OnTheFlyTest
-import TypeToJson exposing (generate)
+import TypeToJson exposing (generate, generateFromJson)
 
 
 
@@ -62,17 +62,27 @@ moduleHeader =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( parse { input = example, output = "", inputJson = "", jsonResult = "", viewOption = Column }, Cmd.none )
+    ( parseFromType { input = example, output = "", inputJson = "", jsonResult = "", viewOption = Column }, Cmd.none )
 
 
-parse : Model -> Model
-parse model =
+parseFromType : Model -> Model
+parseFromType model =
     case generate <| moduleHeader ++ model.input of
         Ok ts ->
-            { model | output = ts }
+            { model | output = ts.output }
 
         Err e ->
             { model | output = e }
+
+
+parseFromJson : Json.Json -> Model -> Model
+parseFromJson json model =
+    case generateFromJson json of
+        Ok out ->
+            { model | output = out.output }
+
+        Err out ->
+            { model | output = out }
 
 
 
@@ -92,10 +102,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Parse ->
-            ( parse model, Cmd.none )
+            ( parseFromType model, Cmd.none )
 
         WriteCode s ->
-            ( parse { model | input = s }, Cmd.none )
+            ( parseFromType { model | input = s }, Cmd.none )
 
         WriteOutput s ->
             ( { model | output = s }, Cmd.none )
@@ -109,7 +119,7 @@ update msg model =
                     case parsed of
                         -- TODO update inputTypes and parse
                         Ok json ->
-                            parse model
+                            parseFromJson json model
 
                         Err errs ->
                             { model | output = "JsonError: \n" ++ errs }
@@ -120,7 +130,7 @@ update msg model =
             ( { m | inputJson = s }, Cmd.none )
 
         Example ->
-            ( parse { model | input = example }, Cmd.none )
+            ( parseFromType { model | input = example }, Cmd.none )
 
         ChangeView viewOption ->
             ( { model | viewOption = viewOption }, Cmd.none )
