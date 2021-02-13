@@ -20,6 +20,14 @@ type alias Constructor =
     }
 
 
+type BaseType
+    = TString
+    | TFloat
+    | TInt
+    | TBool
+    | TOther Name
+
+
 type TypeAnnotation
     = Record RecordDefinition
     | Typed TypeDef
@@ -27,7 +35,7 @@ type TypeAnnotation
 
 
 type TypeDef
-    = Type Name (List TypeAnnotation)
+    = Type BaseType (List TypeAnnotation)
     | ListDef TypeAnnotation
     | MaybeDef TypeAnnotation
     | DictDef TypeAnnotation TypeAnnotation

@@ -1,6 +1,6 @@
 module Generator.Utilities exposing (indent, indentWith, interpolate, interpolateAll, mapGenerics)
 
-import Types exposing (GenericsAnnotation, TypeDef(..))
+import Types exposing (BaseType(..), GenericsAnnotation, TypeDef(..))
 
 
 interpolateAll : List ( String, String ) -> String -> String
@@ -41,7 +41,7 @@ mapGenerics td generics =
     case td of
         Type t args ->
             case t of
-                "Set" ->
+                TOther "Set" ->
                     [ "comparable" ]
 
                 _ ->

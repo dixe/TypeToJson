@@ -11,16 +11,24 @@ type NameModifier
 
 fromTypes : List ValidType -> Json
 fromTypes types =
-    let
-        d =
-            Debug.log "FromTypes " types
-    in
-    case types of
-        t :: [] ->
-            validType t
+    VObject <|
+        List.map
+            (\t ->
+                let
+                    d =
+                        Debug.log "t From " t
+                in
+                { name =
+                    case t of
+                        TypeAlias name _ _ ->
+                            name
 
-        ls ->
-            VArray <| List.map validType ls
+                        CustomType name _ _ _ ->
+                            name
+                , value = validType t
+                }
+            )
+            types
 
 
 validType : ValidType -> Json
@@ -72,7 +80,11 @@ typeAnnotation ta =
             typeDef td
 
         Tuple tas ->
-            unimplemented <| "tuple"
+            let
+                members =
+                    arguments 0 tas
+            in
+            VObject members
 
 
 recordDefinition : { name : String, anno : TypeAnnotation } -> Member
@@ -83,19 +95,11 @@ recordDefinition def =
 typeDef : TypeDef -> Json
 typeDef td =
     case td of
-        Type name tas ->
-            case name of
-                "String" ->
-                    VString "StringValue"
-
-                "Int" ->
-                    VNumber <| NInt 1
-
-                n ->
-                    VString <| n ++ "Value"
+        Type base tas ->
+            baseTypeName base
 
         ListDef ta ->
-            unimplemented "List"
+            VArray [ typeAnnotation ta ]
 
         MaybeDef ta ->
             VMaybe <| typeAnnotation ta
@@ -109,8 +113,8 @@ typeDef td =
                     case key of
                         Typed t ->
                             case t of
-                                Type name _ ->
-                                    name
+                                Type base _ ->
+                                    valueName <| baseTypeName base
 
                                 _ ->
                                     "UnsupportedDictKeyType Record"
@@ -126,6 +130,64 @@ typeDef td =
         --            VObject [ ( typeAnnotation key, typeAnnotation val ) ]
         ResultDef err ok ->
             unimplemented "resDef"
+
+
+valueName : Value -> String
+valueName val =
+    case val of
+        VString s ->
+            "StringValue"
+
+        VObject _ ->
+            "ObjectValue"
+
+        VArray _ ->
+            "ArrayValue"
+
+        VNumber nType ->
+            case nType of
+                NFloat _ ->
+                    "FloatValue"
+
+                NInt _ ->
+                    "IntValue"
+
+        VTrue ->
+            "BoolValue"
+
+        VFalse ->
+            "BoolValue"
+
+        VNull ->
+            "NullValue"
+
+        VMaybe _ ->
+            "MaybeValue"
+
+        VCustom name _ ->
+            name
+
+        VTuple _ ->
+            "TupleValue"
+
+
+baseTypeName : BaseType -> Json
+baseTypeName base =
+    case base of
+        TString ->
+            VString "StringValue"
+
+        TInt ->
+            VNumber <| NInt 0
+
+        TFloat ->
+            VNumber <| NFloat 0.0
+
+        TBool ->
+            VTrue
+
+        TOther n ->
+            VCustom n []
 
 
 unimplemented t =

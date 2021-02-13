@@ -179,7 +179,7 @@ typeAnnotation anno =
                                     Err <| List.map Other [ "Result with " ++ (String.fromInt <| List.length args) ++ " arguments" ]
 
                         n ->
-                            Ok <| Typed <| Type n args
+                            Ok <| Typed <| Type (baseType n) args
                 )
                 parsedArgs
 
@@ -191,7 +191,7 @@ typeAnnotation anno =
             map Tuple parsedArgs
 
         Tan.GenericType t ->
-            Ok <| Typed <| Type t []
+            Ok <| Typed <| Type (baseType t) []
 
         Tan.Unit ->
             Err <| [ NotSupported "Unit" ]
@@ -201,6 +201,22 @@ typeAnnotation anno =
 
         Tan.FunctionTypeAnnotation _ _ ->
             Err <| [ NotSupported "Functions" ]
+
+
+baseType : String -> BaseType
+baseType t =
+    case t of
+        "String" ->
+            TString
+
+        "Int" ->
+            TInt
+
+        "Float" ->
+            TFloat
+
+        n ->
+            TOther n
 
 
 getFields : Tan.RecordDefinition -> ParseResult RecordDefinition

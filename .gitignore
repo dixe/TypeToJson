@@ -4,8 +4,8 @@ elm-stuff
 repl-temp-*
 *.min.js
 index.html
-**/.#
-.#*
+**/*[#]*
+
 
 
 node_modules/

@@ -22,6 +22,9 @@ value indent val =
         VArray vals ->
             array indent vals
 
+        VTuple vals ->
+            tuple indent vals
+
         VString string ->
             "\"" ++ string ++ "\""
 
@@ -54,13 +57,9 @@ value indent val =
                 |> interpolate "options" (String.join ",\n " <| List.map (value indent) vals)
 
 
-
---            String.join " | " <| List.map (value indent) valsa
-{- VAnyOf vals ->
-             """anyOf [{{options}}
-   ]"""
-                 |> interpolate "options" (String.join ",\n " <| List.map (value indent) vals)
--}
+tuple : Indent -> List Value -> String
+tuple indent vals =
+    array indent vals
 
 
 array : Indent -> List Value -> String

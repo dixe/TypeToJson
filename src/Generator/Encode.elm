@@ -327,25 +327,22 @@ typeDef depth td =
     case td of
         Type t args ->
             case t of
-                "String" ->
+                TString ->
                     "Encode.string"
 
-                "Int" ->
+                TInt ->
                     "Encode.int"
 
-                "Float" ->
+                TFloat ->
                     "Encode.float"
 
-                "Bool" ->
+                TBool ->
                     "Encode.bool"
 
-                "Dict" ->
-                    "Encode.dict"
-
-                "Set" ->
+                TOther "Set" ->
                     "(\\encoder data ->  Encode.list encoder <| Set.toList data)"
 
-                n ->
+                TOther n ->
                     "{{name}}Encoder {{args}}"
                         |> interpolateAll
                             [ ( "name", decapitalize n )
@@ -387,7 +384,21 @@ toStringFun td =
                 Typed ta ->
                     case ta of
                         Type t [] ->
-                            t
+                            case t of
+                                TString ->
+                                    "String"
+
+                                TFloat ->
+                                    "Float"
+
+                                TInt ->
+                                    "Int"
+
+                                TBool ->
+                                    "Bool"
+
+                                TOther n ->
+                                    n
 
                         _ ->
                             "UnsupportedToString"

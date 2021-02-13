@@ -378,22 +378,22 @@ typeDef td =
     case td of
         Type t args ->
             case t of
-                "String" ->
+                TString ->
                     "Decode.string"
 
-                "Int" ->
+                TInt ->
                     "Decode.int"
 
-                "Float" ->
+                TFloat ->
                     "Decode.float"
 
-                "Set" ->
+                TOther "Set" ->
                     "Json.Decode.Extra.set"
 
-                "Maybe" ->
-                    "Decode.maybe"
+                TBool ->
+                    "Decode.bool"
 
-                n ->
+                TOther n ->
                     "(Decode.lazy (\\_ -> {{name}}Decoder {{args}}))"
                         |> interpolateAll
                             [ ( "name", decapitalize n )
